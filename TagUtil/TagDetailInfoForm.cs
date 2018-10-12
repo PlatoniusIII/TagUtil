@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.IO;
 
@@ -52,9 +47,15 @@ namespace TagUtil
             editTags.Text = tagFile.TagTypesOnDisk.ToString();
 
             editKey.Text = tagFile.Tag.InitialKey;
+            editISRC.Text = tagFile.Tag.ISRC;
+            editPublisher.Text = tagFile.Tag.Publisher;
+            editRemixer.Text = tagFile.Tag.RemixedBy;
 
+            editComment.Text = tagFile.Tag.Comment;
             if (mainFrm.id3v2 != null)
             {
+                TagLib.Id3v2.PlayCountFrame pcf = TagLib.Id3v2.PlayCountFrame.Get(mainFrm.id3v2, false);
+                editPlaycount.Text = pcf == null ? "" : pcf.ToString();
 
                 TagLib.Id3v2.TextInformationFrame trackFrame = TagLib.Id3v2.TextInformationFrame.Get(mainFrm.id3v2, "TRCK", false);
                 if (trackFrame != null)
@@ -72,9 +73,9 @@ namespace TagUtil
                     };
 
 //                    editKey.Text = ReadID3V2Tag("TKEY");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TKEY", false).ToString();
-                    editISRC.Text = ReadID3V2Tag("TSRC");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TSRC", false).ToString();
-                    editPublisher.Text = ReadID3V2Tag("TPUB");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPUB", false).ToString();
-                    editRemixer.Text = ReadID3V2Tag("TPE4");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPE4", false).ToString();
+//                    editISRC.Text = ReadID3V2Tag("TSRC");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TSRC", false).ToString();
+//                    editPublisher.Text = ReadID3V2Tag("TPUB");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPUB", false).ToString();
+//                    editRemixer.Text = ReadID3V2Tag("TPE4");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPE4", false).ToString();
 
                 }
             } 
@@ -83,16 +84,26 @@ namespace TagUtil
 //            foreach (CommentFrame comment in id3Tag.Comments)
 //                textBox_Comments.Text += comment.Comment + "\n";
  
-            if( mainFrm.ContainsSeratoData() )
-                checkSerato.CheckState = CheckState.Checked;
-            else
-                checkSerato.CheckState = CheckState.Unchecked;
+            //if( mainFrm.ContainsSeratoData() )
+            //    checkSerato.CheckState = CheckState.Checked;
+            //else
+            //    checkSerato.CheckState = CheckState.Unchecked;
 
             if (tagFile.Tag.Pictures.Length >= 1)
             {
-                var bin = (byte[])(tagFile.Tag.Pictures[0].Data.Data);
-//                pictureBoxPreview.Image = Image.FromStream(new MemoryStream(bin)).GetThumbnailImage(100, 100, null, IntPtr.Zero);
-                pictureBoxPreview.Image = Image.FromStream(new MemoryStream(bin));
+                for (int i = 0; i < tagFile.Tag.Pictures.Length; i++)
+                {
+                    var bin = (byte[])(tagFile.Tag.Pictures[i].Data.Data);
+                    //                pictureBoxPreview.Image = Image.FromStream(new MemoryStream(bin)).GetThumbnailImage(100, 100, null, IntPtr.Zero);
+                    try
+                    {
+                        pictureBoxPreview.Image = Image.FromStream(new MemoryStream(bin));
+                        break;
+                    }
+                    catch (ArgumentException)
+                    {
+                    }
+                }
             }
 
             //TagLib.Id3v2.TextInformationFrame test = tagFile.TagTypes

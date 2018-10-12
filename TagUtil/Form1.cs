@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Collections;
 using TagLib;
 
-//Whole idea:
-//- be able to rename directories based on content
-//- 'repair' cue files - so also view them and highlight errors
-//
-//Problems with taglib-sharp:
-//- doesn't read a lot of tags from other formats than ID3V2 (for eaxmple doesn't read VORBIS_COMMENT metadata block from FLAC) See https://www.the-roberts-family.net/metadata/flac.html
-//- no list of "tags available in file"
+/// <summary>Whole idea:
+/// - be able to rename directories based on content
+/// - 'repair' cue files - so also view them and highlight errors
+/// </summary>
+//ToDo Problems with taglib-sharp:
+//ToDo TagLib: doesn't read a lot of tags from other formats than ID3V2 (for eaxmple doesn't read VORBIS_COMMENT metadata block from FLAC) See https://www.the-roberts-family.net/metadata/flac.html
+//ToDo TagLib: no list of "tags available in file"
 namespace TagUtil
 {
     public partial class formMain : Form
@@ -27,9 +24,9 @@ namespace TagUtil
 
         public TagLib.Id3v1.Tag id3v1;
         public TagLib.Id3v2.Tag id3v2;
-        public TagLib.Mpeg4.AppleTag apple;
-        public TagLib.Ape.Tag ape;
-        public TagLib.Asf.Tag asf;
+//        public TagLib.Mpeg4.AppleTag apple;
+//        public TagLib.Ape.Tag ape;
+//        public TagLib.Asf.Tag asf;
         public TagLib.Ogg.XiphComment ogg;
         public TagLib.Flac.Metadata flac;
         public TagLib.ByteVector Serato_Autotags_Identifier_ID3 = new TagLib.ByteVector("Serato Autotags");
@@ -88,9 +85,9 @@ namespace TagUtil
             //currentFile = TagLib.File.Create(FileInfoView.FocusedItem.SubItems[4].Text);
             id3v1 = currentFile.GetTag(TagLib.TagTypes.Id3v1) as TagLib.Id3v1.Tag;
             id3v2 = currentFile.GetTag(TagLib.TagTypes.Id3v2) as TagLib.Id3v2.Tag;
-            apple = currentFile.GetTag(TagLib.TagTypes.Apple) as TagLib.Mpeg4.AppleTag;
-            ape = currentFile.GetTag(TagLib.TagTypes.Ape) as TagLib.Ape.Tag;
-            asf = currentFile.GetTag(TagLib.TagTypes.Asf) as TagLib.Asf.Tag;
+//            apple = currentFile.GetTag(TagLib.TagTypes.Apple) as TagLib.Mpeg4.AppleTag;
+//            ape = currentFile.GetTag(TagLib.TagTypes.Ape) as TagLib.Ape.Tag;
+//            asf = currentFile.GetTag(TagLib.TagTypes.Asf) as TagLib.Asf.Tag;
             ogg = currentFile.GetTag(TagLib.TagTypes.Xiph) as TagLib.Ogg.XiphComment;
             flac = currentFile.GetTag(TagLib.TagTypes.FlacMetadata) as TagLib.Flac.Metadata;
         }
@@ -284,6 +281,17 @@ namespace TagUtil
             }
         }
 
+        /// <summary>
+        ///    Parses the rename directory string, replacing placeholders used.
+        /// </summary>
+        /// <value>
+        ///    A <see cref="string" /> object containing the santized string with all
+        ///    placeholders replaced.
+        /// </value>
+        /// <remarks>
+        ///    Contains some specific replacements I need.
+        /// </remarks>
+        /// <seealso cref="replacePlaceholder"/>
         private string ParseString()
         {
             /// <summary>We are going to rename the folder. Loop through all (music) files in the folder to determine aspects
@@ -293,7 +301,7 @@ namespace TagUtil
             bool bPlaceholderActive = false;
             string placeHolder = string.Empty;
             QualityRating = DetermineMusicQualityRating();
-            if (FileInfoView.FocusedItem != null)
+            if (FileInfoView2.FocusedItem != null)
                 ReadTags();
             else
                 return string.Empty;
@@ -305,7 +313,7 @@ namespace TagUtil
                     if (bPlaceholderActive)
                     {
                         bPlaceholderActive = false;
-                        newDirectory += replacePlaceholder(placeHolder);
+                        newDirectory += SanitizeFileName(replacePlaceholder(placeHolder));
                     }
                     else
                     {
@@ -323,16 +331,45 @@ namespace TagUtil
                 }
             }
             labelResultingString.Text = newDirectory;
+            //Here should be a general 'remove chars that can't be used in a directory' function
             return newDirectory;
         }
 
+        public static string SanitizeFileName(string fileName, char replacementChar = '_')
+        {
+            var blackList = new HashSet<char>(System.IO.Path.GetInvalidFileNameChars());
+            var output = fileName.ToCharArray();
+            for (int i = 0, ln = output.Length; i < ln; i++)
+            {
+                if (blackList.Contains(output[i]))
+                {
+                    output[i] = replacementChar;
+                }
+            }
+            return new String(output);
+        }
+
+        /// <summary>
+        ///    Replaces a placeholder string with the value from the file or a
+        ///    specific result.
+        /// </summary>
+        /// <value>
+        ///    A <see cref="string" /> object containing the placeholders value.
+        /// </value>
+        /// <remarks>
+        ///    Contains some specific replacements I need.
+        /// </remarks>
+        /// <seealso cref="ParseString"/>
+        /// <param name="placeHolder">Placeholder string that needs to be replaced</param>
+        /// <returns>This function returns a <see cref="string"/> that contains either the 
+        /// value from the current file or a result based on info, like the bitrate type</returns>
         private string replacePlaceholder(string placeHolder)
         {
             string newData = string.Empty;
 
             switch (placeHolder)
             {
-                case "isrc": newData = GetISRC((TagLib.Id3v2.Tag)currentFile.GetTag(TagLib.TagTypes.Id3v2)); break;
+                case "isrc": newData = (currentFile.Tag.ISRC.IndexOf(',') >= 0) ? currentFile.Tag.ISRC.Substring(0, currentFile.Tag.ISRC.IndexOf(',')): currentFile.Tag.ISRC; break;
                 case "albumartist": newData = currentFile.Tag.AlbumArtists[0]; break;
                 case "album": newData = currentFile.Tag.Album; break;
                 case "year": newData = currentFile.Tag.Year.ToString(); break;
@@ -347,25 +384,19 @@ namespace TagUtil
             return newData;
         }
 
-        //RW@20180925: Moet dit meerdere tags af kunnen gaan?
-        //RW@20180925: Discogs zet meerder vormen van de ISRC achter elkaar, alleen de eerste pakken (tot comma)?
-        public static string GetISRC(TagLib.Id3v2.Tag tag)
-        {
-            String ISRC = "";
-            if (tag == null) return ISRC;
-
-            var frames = tag.GetFrames<TagLib.Id3v2.TextInformationFrame>("TSRC");
-            foreach (TagLib.Id3v2.TextInformationFrame frame in frames)
-            {
-                foreach (string text in frame.Text)
-                    if (text.Length > ISRC.Length)
-                        ISRC = text;
-            }
-
-            return ISRC;
-        }
-
-        //RW@20180925: Return type - flac, vbr or bitrate
+        /// <summary>
+        ///    Gets a bitrate type enumeration. 
+        /// </summary>
+        /// <value>
+        ///    A <see cref="bitrateType" /> containing filetype or bitrate.
+        /// </value>
+        /// <remarks>
+        ///    Contains some specific replacements I need.
+        /// </remarks>
+        /// <seealso cref="bitrateType"/>
+        /// <completionlist cref="bitrateType"/>
+        /// <returns>This function returns a <see cref="bitrateType"/> that contains either the 
+        /// type of file, or (for MP3) either the bitrate or if it's VBR</returns>
         private bitrateType GetBitrateType()
         {
             /// <summary>Returns enum of bitrate type
@@ -420,6 +451,15 @@ namespace TagUtil
         //Additional info here http://gabriel.mp3-tech.org/mp3infotag.html
         //https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header
 
+        /// <summary>
+        ///    Returns if Serato tags are present. 
+        /// </summary>
+        /// <remarks>
+        ///    Haven't found info on how to decode the data.
+        ///    Magic Marker YXBwbG also can't be found
+        /// </remarks>
+        /// <returns>A <see cref="bool"/> to show if Serato tags are present</returns>
+        //ToDo Serato: Don't search whole file! Only tag space (How?)
         public bool ContainsSeratoData()
         {
             /// <summary>Scans the file for headers that point to Serato data
@@ -555,7 +595,6 @@ namespace TagUtil
             }
             if (bCorruptFiles) { if (verdict.Length > 0) verdict += "+"; verdict += "CORRUPT"; }
             if (bVariousBitrates) { if (verdict.Length > 0) verdict += "+"; verdict += "VARIOUS BITRATES"; }
-//            if (!bVariousBitrates && !bVBRandCBR) { verdict += " - " + lastBitrate.ToString(); }
             if (bFlac && !bCBR && !bCBR) { verdict += " - FLAC"; }
             if (!bFlac && bMP3 && !bVBR && !bVariousBitrates) { verdict += " - " + GetBitrateTypeString(typeBitrate); } //Just use the last one
             if (!bFlac && !bMP3 && bVBR && !bVariousBitrates) { verdict += " - VBR"; }
@@ -563,10 +602,11 @@ namespace TagUtil
             return verdict;
         }
 
+        /// <summary>Add a marker if it's something I've done - may make this more generic like a certain replace or add based on what it finds
+        /// </summary>
+        //ToDo CheckOwnFiles - general string search?
         private string CheckOwnFiles()
         {
-            /// <summary>Add a marker if it's something I've done - may make this more generic like a certain replace or add based on what it finds
-            /// </summary>
             return "";
         }
 

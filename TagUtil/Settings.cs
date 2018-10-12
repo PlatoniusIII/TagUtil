@@ -89,7 +89,7 @@ namespace XMLsetting
             {
                 serializer.Serialize(writer, this);
             }
-            catch (Exception e)
+            catch (Exception)
             {
 //                logger.ErrorFormat("Error: opening avi file - catch: {0}", e.Message);
             }

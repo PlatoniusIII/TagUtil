@@ -67,6 +67,10 @@
             this.editPublisher = new System.Windows.Forms.TextBox();
             this.labelTags = new System.Windows.Forms.Label();
             this.editTags = new System.Windows.Forms.TextBox();
+            this.labelPlaycount = new System.Windows.Forms.Label();
+            this.editPlaycount = new System.Windows.Forms.TextBox();
+            this.labelComment = new System.Windows.Forms.Label();
+            this.editComment = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
             this.SuspendLayout();
             // 
@@ -258,7 +262,7 @@
             // labelSerato
             // 
             this.labelSerato.AutoSize = true;
-            this.labelSerato.Location = new System.Drawing.Point(13, 361);
+            this.labelSerato.Location = new System.Drawing.Point(13, 391);
             this.labelSerato.Name = "labelSerato";
             this.labelSerato.Size = new System.Drawing.Size(64, 13);
             this.labelSerato.TabIndex = 23;
@@ -268,7 +272,7 @@
             // 
             this.checkSerato.AutoCheck = false;
             this.checkSerato.AutoSize = true;
-            this.checkSerato.Location = new System.Drawing.Point(83, 360);
+            this.checkSerato.Location = new System.Drawing.Point(83, 390);
             this.checkSerato.Name = "checkSerato";
             this.checkSerato.Size = new System.Drawing.Size(15, 14);
             this.checkSerato.TabIndex = 24;
@@ -386,11 +390,47 @@
             this.editTags.Size = new System.Drawing.Size(414, 20);
             this.editTags.TabIndex = 37;
             // 
-            // formDetailInfo
+            // labelPlaycount
+            // 
+            this.labelPlaycount.AutoSize = true;
+            this.labelPlaycount.Location = new System.Drawing.Point(368, 211);
+            this.labelPlaycount.Name = "labelPlaycount";
+            this.labelPlaycount.Size = new System.Drawing.Size(54, 13);
+            this.labelPlaycount.TabIndex = 40;
+            this.labelPlaycount.Text = "Playcount";
+            // 
+            // editPlaycount
+            // 
+            this.editPlaycount.Location = new System.Drawing.Point(437, 208);
+            this.editPlaycount.Name = "editPlaycount";
+            this.editPlaycount.Size = new System.Drawing.Size(60, 20);
+            this.editPlaycount.TabIndex = 39;
+            // 
+            // labelComment
+            // 
+            this.labelComment.AutoSize = true;
+            this.labelComment.Location = new System.Drawing.Point(14, 338);
+            this.labelComment.Name = "labelComment";
+            this.labelComment.Size = new System.Drawing.Size(51, 13);
+            this.labelComment.TabIndex = 42;
+            this.labelComment.Text = "Comment";
+            // 
+            // editComment
+            // 
+            this.editComment.Location = new System.Drawing.Point(83, 335);
+            this.editComment.Name = "editComment";
+            this.editComment.Size = new System.Drawing.Size(414, 20);
+            this.editComment.TabIndex = 41;
+            // 
+            // TagDetailInfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(508, 756);
+            this.Controls.Add(this.labelComment);
+            this.Controls.Add(this.editComment);
+            this.Controls.Add(this.labelPlaycount);
+            this.Controls.Add(this.editPlaycount);
             this.Controls.Add(this.labelTags);
             this.Controls.Add(this.editTags);
             this.Controls.Add(this.labelPublisher);
@@ -431,7 +471,7 @@
             this.Controls.Add(this.labelArtist);
             this.Controls.Add(this.editArtist);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "formDetailInfo";
+            this.Name = "TagDetailInfoForm";
             this.Text = "Form2";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).EndInit();
             this.ResumeLayout(false);
@@ -480,5 +520,9 @@
         private System.Windows.Forms.TextBox editPublisher;
         private System.Windows.Forms.Label labelTags;
         private System.Windows.Forms.TextBox editTags;
+        private System.Windows.Forms.Label labelPlaycount;
+        private System.Windows.Forms.TextBox editPlaycount;
+        private System.Windows.Forms.Label labelComment;
+        private System.Windows.Forms.TextBox editComment;
     }
 }
