@@ -468,6 +468,14 @@ namespace TagUtil
             /// Tags may differ between formats
             /// </summary>
             bool bExists = false;
+
+            string[] seratoAnalysisb64 = new string[1];
+            string[] seratoAutogainb64;
+            string[] seratoMarkersb64;
+            string[] seratoOverviewb64;
+            string[] seratoRelVolb64;
+            string[] seratoVideoAssocb64;
+
             string seratoAnalysis = string.Empty;
             string seratoAutogain = string.Empty;
             string seratoBeatgrid = string.Empty;
@@ -481,18 +489,52 @@ namespace TagUtil
             //testBeatgrid += "=";
             //int nn = testBeatgrid.Length;
             //byte[] datatest = Convert.FromBase64String(testBeatgrid);
+            if (id3v2 != null)
+            {
+                //                seratoAnalysisb64 = 
+                //TagLib.Id3v2.Frame[] fra = id3v2.GetFrames();// Serato_Autotags_Identifier_ID3);
+                foreach (TagLib.Id3v2.Frame f in id3v2.GetFrames())
+                {
+                    if (f is TagLib.Id3v2.AttachmentFrame)
+                    {
+                        TagLib.Id3v2.AttachmentFrame tt = ((TagLib.Id3v2.AttachmentFrame)f);
+                        if (tt.Description == "Serato Analysis")
+                        {
+                            seratoAnalysis = tt.Data.ToString();
+                        }
+                        if (tt.Description == "Serato Autogain")
+                        {
+                            seratoAutogain = tt.Data.ToString();
+                        }
+                        if (tt.Description == "Serato Beatgrid")
+                        {
+                            seratoBeatgrid = tt.Data.ToString();
+                        }
+                        if (tt.Description == "Serato Markers")
+                        {
+                            seratoMarkers = tt.Data.ToString();
+                        }
+                        if (tt.Description == "Serato Overview")
+                        {
+                            seratoOverview = tt.Data.ToString();
+                        }
+                    }
+                }
+            }
             if (ogg != null)
             {
-                string[] seratoInput = ogg.GetField("SERATO_ANALYSIS");
+                seratoAnalysisb64 = ogg.GetField("SERATO_ANALYSIS");
+                seratoMarkersb64 = ogg.GetField("SERATO_MARKERS_V2");
+            }
                 //                seratoInput[0] += (seratoInput[0].Length % 4 == 0)?"":string.Concat(Enumerable.Repeat('=', 4 - seratoInput[0].Length % 4));
-                if (seratoInput[0].Length > 0 && seratoInput[0].Length % 4 == 0)
-                {
-                    byte[] data = Convert.FromBase64String(seratoInput[0]);
-                    seratoAnalysis = Encoding.UTF8.GetString(data);
-                    bExists = true;
-                }
-                seratoInput = ogg.GetField("SERATO_MARKERS_V2");
-                seratoInput[0] = seratoInput[0].Replace("\n", "");
+            if (seratoAnalysisb64[0].Length > 0 && seratoAnalysisb64[0].Length % 4 == 0)
+            {
+                byte[] data = Convert.FromBase64String(seratoAnalysisb64[0]);
+                seratoAnalysis = Encoding.UTF8.GetString(data);
+                bExists = true;
+            }
+
+/*                seratoInput[0] = seratoInput[0].Replace("\n", "");
                 seratoInput[0] += (seratoInput[0].Length % 4 == 0)?"":string.Concat(Enumerable.Repeat('=', 4 - seratoInput[0].Length % 4));
                 if (seratoInput[0].Length > 0 && seratoInput[0].Length % 4 == 0)
                 {
@@ -546,7 +588,7 @@ namespace TagUtil
                     bExists = true;
                 }
             }
-
+*/
             //            currentFile.Mode = TagLib.File.AccessMode.Read;
             //            long seratoData = currentFile.Find(Serato_Autotags_Identifier_ID3); //Find in MP3 files
             //            if (seratoData > 0) return true;
