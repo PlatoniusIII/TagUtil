@@ -500,23 +500,32 @@ namespace TagUtil
                         TagLib.Id3v2.AttachmentFrame tt = ((TagLib.Id3v2.AttachmentFrame)f);
                         if (tt.Description == "Serato Analysis")
                         {
-                            seratoAnalysis = tt.Data.ToString();
+//                            seratoAnalysis = tt.Data.ToString();
+                            seratoAnalysis = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
+                        }
+                        if (tt.Description == "Serato Autotags")
+                        {
+                            seratoVideoAssoc = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
                         }
                         if (tt.Description == "Serato Autogain")
                         {
-                            seratoAutogain = tt.Data.ToString();
+                            seratoAutogain = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
                         }
-                        if (tt.Description == "Serato Beatgrid")
+                        if (tt.Description == "Serato BeatGrid")
                         {
-                            seratoBeatgrid = tt.Data.ToString();
+                            seratoBeatgrid = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
                         }
-                        if (tt.Description == "Serato Markers")
+                        if (tt.Description == "Serato Markers_")
                         {
                             seratoMarkers = tt.Data.ToString();
                         }
+                        if (tt.Description == "Serato Markers2")
+                        {
+                            seratoMarkers = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
+                        }
                         if (tt.Description == "Serato Overview")
                         {
-                            seratoOverview = tt.Data.ToString();
+                            seratoOverview = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
                         }
                     }
                 }
