@@ -78,16 +78,16 @@ namespace TagUtil
 //                    editRemixer.Text = ReadID3V2Tag("TPE4");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPE4", false).ToString();
 
                 }
-            } 
-            
-//            editGenre.Text = tagFile.Tag.Genres[0];
-//            foreach (CommentFrame comment in id3Tag.Comments)
-//                textBox_Comments.Text += comment.Comment + "\n";
- 
-            //if( mainFrm.ContainsSeratoData() )
-            //    checkSerato.CheckState = CheckState.Checked;
-            //else
-            //    checkSerato.CheckState = CheckState.Unchecked;
+            }
+
+            //            editGenre.Text = tagFile.Tag.Genres[0];
+            //            foreach (CommentFrame comment in id3Tag.Comments)
+            //                textBox_Comments.Text += comment.Comment + "\n";
+
+            if( mainFrm.ContainsSeratoData() )
+                checkSerato.CheckState = CheckState.Checked;
+            else
+                checkSerato.CheckState = CheckState.Unchecked;
 
             if (tagFile.Tag.Pictures.Length >= 1)
             {
