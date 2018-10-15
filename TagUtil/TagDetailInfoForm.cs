@@ -83,7 +83,10 @@ namespace TagUtil
             if( mainFrm.ContainsSeratoData() )
             {
                 editSeratoAnalysis.Text = mainFrm.serato.seratoAnalysis;
-                editSeratoAutotags.Text = mainFrm.serato.seratoAutotags;
+                if (mainFrm.serato.seratoAutotags.Length > 0)
+                    editSeratoAutotags.Text = "BPM: " + mainFrm.serato.BPM + " - tag2: " + mainFrm.serato.tag2 + " - tag3: " + mainFrm.serato.tag3;
+                else
+                    editSeratoAutotags.Text = "Field not available";
             }
 
             //            editGenre.Text = tagFile.Tag.Genres[0];
