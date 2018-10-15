@@ -52,7 +52,6 @@
             this.editDuration = new System.Windows.Forms.TextBox();
             this.pictureBoxPreview = new System.Windows.Forms.PictureBox();
             this.labelSerato = new System.Windows.Forms.Label();
-            this.checkSerato = new System.Windows.Forms.CheckBox();
             this.labelBPM = new System.Windows.Forms.Label();
             this.editBPM = new System.Windows.Forms.TextBox();
             this.labelKey = new System.Windows.Forms.Label();
@@ -71,6 +70,10 @@
             this.editPlaycount = new System.Windows.Forms.TextBox();
             this.labelComment = new System.Windows.Forms.Label();
             this.editComment = new System.Windows.Forms.TextBox();
+            this.editSeratoAnalysis = new System.Windows.Forms.TextBox();
+            this.editSeratoAutotags = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
             this.SuspendLayout();
             // 
@@ -252,9 +255,9 @@
             // 
             // pictureBoxPreview
             // 
-            this.pictureBoxPreview.Location = new System.Drawing.Point(82, 413);
+            this.pictureBoxPreview.Location = new System.Drawing.Point(82, 519);
             this.pictureBoxPreview.Name = "pictureBoxPreview";
-            this.pictureBoxPreview.Size = new System.Drawing.Size(300, 300);
+            this.pictureBoxPreview.Size = new System.Drawing.Size(237, 235);
             this.pictureBoxPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBoxPreview.TabIndex = 22;
             this.pictureBoxPreview.TabStop = false;
@@ -264,19 +267,9 @@
             this.labelSerato.AutoSize = true;
             this.labelSerato.Location = new System.Drawing.Point(13, 391);
             this.labelSerato.Name = "labelSerato";
-            this.labelSerato.Size = new System.Drawing.Size(64, 13);
+            this.labelSerato.Size = new System.Drawing.Size(45, 13);
             this.labelSerato.TabIndex = 23;
-            this.labelSerato.Text = "Serato Data";
-            // 
-            // checkSerato
-            // 
-            this.checkSerato.AutoCheck = false;
-            this.checkSerato.AutoSize = true;
-            this.checkSerato.Location = new System.Drawing.Point(83, 390);
-            this.checkSerato.Name = "checkSerato";
-            this.checkSerato.Size = new System.Drawing.Size(15, 14);
-            this.checkSerato.TabIndex = 24;
-            this.checkSerato.UseVisualStyleBackColor = true;
+            this.labelSerato.Text = "Analysis";
             // 
             // labelBPM
             // 
@@ -422,11 +415,47 @@
             this.editComment.Size = new System.Drawing.Size(414, 20);
             this.editComment.TabIndex = 41;
             // 
+            // editSeratoAnalysis
+            // 
+            this.editSeratoAnalysis.Location = new System.Drawing.Point(81, 388);
+            this.editSeratoAnalysis.Name = "editSeratoAnalysis";
+            this.editSeratoAnalysis.Size = new System.Drawing.Size(414, 20);
+            this.editSeratoAnalysis.TabIndex = 43;
+            // 
+            // editSeratoAutotags
+            // 
+            this.editSeratoAutotags.Location = new System.Drawing.Point(81, 412);
+            this.editSeratoAutotags.Name = "editSeratoAutotags";
+            this.editSeratoAutotags.Size = new System.Drawing.Size(414, 20);
+            this.editSeratoAutotags.TabIndex = 45;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(13, 415);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(49, 13);
+            this.label1.TabIndex = 44;
+            this.label1.Text = "Autotags";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(14, 372);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(38, 13);
+            this.label2.TabIndex = 46;
+            this.label2.Text = "Serato";
+            // 
             // TagDetailInfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(508, 756);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.editSeratoAutotags);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.editSeratoAnalysis);
             this.Controls.Add(this.labelComment);
             this.Controls.Add(this.editComment);
             this.Controls.Add(this.labelPlaycount);
@@ -445,7 +474,6 @@
             this.Controls.Add(this.editKey);
             this.Controls.Add(this.labelBPM);
             this.Controls.Add(this.editBPM);
-            this.Controls.Add(this.checkSerato);
             this.Controls.Add(this.labelSerato);
             this.Controls.Add(this.pictureBoxPreview);
             this.Controls.Add(this.labelDuration);
@@ -505,7 +533,6 @@
         private System.Windows.Forms.TextBox editDuration;
         private System.Windows.Forms.PictureBox pictureBoxPreview;
         private System.Windows.Forms.Label labelSerato;
-        private System.Windows.Forms.CheckBox checkSerato;
         private System.Windows.Forms.Label labelBPM;
         private System.Windows.Forms.TextBox editBPM;
         private System.Windows.Forms.Label labelKey;
@@ -524,5 +551,9 @@
         private System.Windows.Forms.TextBox editPlaycount;
         private System.Windows.Forms.Label labelComment;
         private System.Windows.Forms.TextBox editComment;
+        private System.Windows.Forms.TextBox editSeratoAnalysis;
+        private System.Windows.Forms.TextBox editSeratoAutotags;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
     }
 }

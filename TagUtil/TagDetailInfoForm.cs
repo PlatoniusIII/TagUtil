@@ -80,14 +80,20 @@ namespace TagUtil
                 }
             }
 
+            if( mainFrm.ContainsSeratoData() )
+            {
+                editSeratoAnalysis.Text = mainFrm.serato.seratoAnalysis;
+                editSeratoAutotags.Text = mainFrm.serato.seratoAutotags;
+            }
+
             //            editGenre.Text = tagFile.Tag.Genres[0];
             //            foreach (CommentFrame comment in id3Tag.Comments)
             //                textBox_Comments.Text += comment.Comment + "\n";
 
-            if( mainFrm.ContainsSeratoData() )
-                checkSerato.CheckState = CheckState.Checked;
-            else
-                checkSerato.CheckState = CheckState.Unchecked;
+            //if( mainFrm.ContainsSeratoData() )
+            //    checkSerato.CheckState = CheckState.Checked;
+            //else
+            //    checkSerato.CheckState = CheckState.Unchecked;
 
             if (tagFile.Tag.Pictures.Length >= 1)
             {

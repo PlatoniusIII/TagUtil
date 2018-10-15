@@ -20,15 +20,15 @@ namespace TagUtil
 {
     public partial class formMain : Form
     {
-//        public string directoryRenameScheme = "..\\%isrc% %albumartist% - %album% - %year% (%bitratetype%)";
+        //        public string directoryRenameScheme = "..\\%isrc% %albumartist% - %album% - %year% (%bitratetype%)";
         public TagLib.File currentFile = null;
         TagDetailInfoForm fileInfo;
 
         public TagLib.Id3v1.Tag id3v1;
         public TagLib.Id3v2.Tag id3v2;
-//        public TagLib.Mpeg4.AppleTag apple;
-//        public TagLib.Ape.Tag ape;
-//        public TagLib.Asf.Tag asf;
+        //        public TagLib.Mpeg4.AppleTag apple;
+        //        public TagLib.Ape.Tag ape;
+        //        public TagLib.Asf.Tag asf;
         public TagLib.Ogg.XiphComment ogg;
         public TagLib.Flac.Metadata flac;
         public TagLib.ByteVector Serato_Autotags_Identifier_ID3 = new TagLib.ByteVector("Serato Autotags");
@@ -37,6 +37,31 @@ namespace TagUtil
         public TagLib.ByteVector Serato_BeatGrid_Identifier = new TagLib.ByteVector("SERATO_BEATGRID");
         public TagLib.ByteVector LAME_Identifier = new TagLib.ByteVector("LAME");
         string[] extensions = { ".mp3", ".wma", ".mp4", ".wav", ".flac", ".m4a" };
+
+        public class serato_struct
+        {
+            public void Init()
+            {
+                seratoAnalysis = string.Empty;
+                seratoAutogain = string.Empty;
+                seratoAutotags = string.Empty;
+                seratoBeatgrid = string.Empty;
+                seratoMarkers = string.Empty;
+                seratoOverview = string.Empty;
+                seratoRelVol = string.Empty;
+                seratoVideoAssoc = string.Empty;
+            }
+            public string seratoAnalysis { set; get; }
+            public string seratoAutogain { set; get; }
+            public string seratoAutotags { set; get; }
+            public string seratoBeatgrid { set; get; }
+            public string seratoMarkers { set; get; }
+            public string seratoOverview { set; get; }
+            public string seratoRelVol { set; get; }
+            public string seratoVideoAssoc { set; get; }
+
+        }
+        public serato_struct serato;
 
         enum bitrateType
         {
@@ -67,6 +92,8 @@ namespace TagUtil
             fileInfo.AutoScroll = true;
             TagInfoPanel.Controls.Add(fileInfo);
             fileInfo.Show();
+
+            serato = new serato_struct();
 
             editDirectoryRenameScheme.Text = appSettings.TagUtilSettings.directoryRenameScheme;
             editCurrentDirectory.Text = appSettings.TagUtilSettings.currentDirectory;
@@ -462,6 +489,87 @@ namespace TagUtil
         /// <returns>A <see cref="bool"/> to show if Serato tags are present</returns>
         //ToDo Serato: Don't search whole file! Only tag space (How?)
         //ToDo Serato: decode various parts and check contents
+        //MP3: tags are plain
+        //OGG: tags are base64 encoded
+        //Content:
+        /// <remarks>
+        ///    <para>I want to try and decode the Serato tags that are
+        ///    written to the file.</para>
+        ///    <para>For now I have the following info</para>
+        ///    <list type="table">
+        ///       <listheader>
+        ///          <term>Format</term>
+        ///          <description>Info</description>
+        ///       </listheader>
+        ///       <item>
+        ///          <term>MP3</term>
+        ///          <description>Tags are stored plain</description>
+        ///       </item>
+        ///       <item>
+        ///          <term>Flac</term>
+        ///          <description>Tags are Base64 encoded</description>
+        ///       </item>
+        ///    </list>
+        ///    
+        ///    <list type="table">
+        ///       <listheader>
+        ///          <term>Tag</term>
+        ///          <term>Type</term>
+        ///          <description>Description</description>
+        ///       </listheader>
+        ///       <item>
+        ///          <term>Serato Analysis</term>
+        ///          <term>application/octet-stream</term>
+        ///          <description>Unknown</description>
+        ///       </item>
+        ///       <item>
+        ///          <term>Serato Autogain</term>
+        ///          <term>Type</term>
+        ///          <description>Calculated autogain level of the track</description>
+        ///       </item>
+        ///       <item>
+        ///          <term>Serato Autotags</term>
+        ///          <term>application/octet-stream</term>
+        ///          <description>Seems to contain at least the BPM</description>
+        ///       </item>
+        ///       <item>
+        ///          <term>Serato Beatgrid</term>
+        ///          <term>application/octet-stream</term>
+        ///          <description>Structure for storing the beatgrid</description>
+        ///       </item>
+        ///       <item>
+        ///          <term>Serato Markers</term>
+        ///          <term>application/octet-stream</term>
+        ///          <description>Probably old(er) format of how cues are stored. 
+        ///          Though both can occur in the same file</description>
+        ///       </item>
+        ///       <item>
+        ///          <term>Serato Markers 2</term>
+        ///          <term>application/octet-stream</term>
+        ///          <description>Current format in which cue points are stored</description>
+        ///       </item>
+        ///       <item>
+        ///          <term>Serato Offsets</term>
+        ///          <term>application/octet-stream</term>
+        ///          <description>Seems to contain the audio rate (44.1KHz)</description>
+        ///       </item>
+        ///       <item>
+        ///          <term>Serato Overview</term>
+        ///          <term>application/octet-stream</term>
+        ///          <description>Unknown</description>
+        ///       </item>
+        ///       <item>
+        ///          <term>Serato RelVol</term>
+        ///          <term>Type</term>
+        ///          <description>FLAC tag for MP3's Autogain tag?</description>
+        ///       </item>
+        ///       <item>
+        ///          <term>Serato VideoAssoc</term>
+        ///          <term>Type</term>
+        ///          <description>Guess it's the option to link to a video file</description>
+        ///       </item>
+        ///    </list>
+        /// </remarks>
         public bool ContainsSeratoData()
         {
             /// <summary>Scans the file for headers that point to Serato data
@@ -469,135 +577,182 @@ namespace TagUtil
             /// </summary>
             bool bExists = false;
 
-            string[] seratoAnalysisb64 = new string[1];
-            string[] seratoAutogainb64;
-            string[] seratoMarkersb64;
-            string[] seratoOverviewb64;
-            string[] seratoRelVolb64;
-            string[] seratoVideoAssocb64;
+            serato.Init();
 
-            string seratoAnalysis = string.Empty;
-            string seratoAutogain = string.Empty;
-            string seratoBeatgrid = string.Empty;
-            string seratoMarkers = string.Empty;
-            string seratoOverview = string.Empty;
-            string seratoRelVol = string.Empty;
-            string seratoVideoAssoc = string.Empty;
-            //string testBeatgrid = ("YXBwbGljYXRpb24vb2N0ZXQtc3RyZWFtAABTZXJhdG8gQmVhdEdyaWQAAQAAAAABPAjnpEMs\n2ZpBA");
-            //string testMarkers = ("YXBwbGljYXRpb24vb2N0ZXQtc3RyZWFtAABTZXJhdG8gTWFya2VyczIAAQFBUUZEVDB4UFVn\nQUFBQUFFQVAvLy8wSlFUVXhQUTBzQUFBQUFBUUFBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAA");
-            //testBeatgrid = testBeatgrid.Replace("\n","");
-            //testBeatgrid += "=";
-            //int nn = testBeatgrid.Length;
-            //byte[] datatest = Convert.FromBase64String(testBeatgrid);
             if (id3v2 != null)
             {
-                //                seratoAnalysisb64 = 
-                //TagLib.Id3v2.Frame[] fra = id3v2.GetFrames();// Serato_Autotags_Identifier_ID3);
                 foreach (TagLib.Id3v2.Frame f in id3v2.GetFrames())
                 {
                     if (f is TagLib.Id3v2.AttachmentFrame)
                     {
-                        TagLib.Id3v2.AttachmentFrame tt = ((TagLib.Id3v2.AttachmentFrame)f);
-                        if (tt.Description == "Serato Analysis")
+                        TagLib.Id3v2.AttachmentFrame tagSerato = ((TagLib.Id3v2.AttachmentFrame)f);
+                        if (tagSerato.Description == "Serato Analysis")
                         {
-//                            seratoAnalysis = tt.Data.ToString();
-                            seratoAnalysis = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
+                            serato.seratoAnalysis = Encoding.UTF8.GetString(tagSerato.Data.Data);
+                            bExists = true;
                         }
-                        if (tt.Description == "Serato Autotags")
+                        if (tagSerato.Description == "Serato Autotags")
                         {
-                            seratoVideoAssoc = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
+                            serato.seratoAutotags = Encoding.UTF8.GetString(tagSerato.Data.Data);
+                            bExists = true;
                         }
-                        if (tt.Description == "Serato Autogain")
+                        if (tagSerato.Description == "Serato Autogain")
                         {
-                            seratoAutogain = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
+                            serato.seratoAutogain = Encoding.UTF8.GetString(tagSerato.Data.Data);
+                            bExists = true;
                         }
-                        if (tt.Description == "Serato BeatGrid")
+                        if (tagSerato.Description == "Serato BeatGrid")
                         {
-                            seratoBeatgrid = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
+                            serato.seratoBeatgrid = Encoding.UTF8.GetString(tagSerato.Data.Data);
+                            bExists = true;
                         }
-                        if (tt.Description == "Serato Markers_")
+                        if (tagSerato.Description == "Serato Markers_")
                         {
-                            seratoMarkers = tt.Data.ToString();
+                            serato.seratoMarkers = tagSerato.Data.ToString();
+                            bExists = true;
                         }
-                        if (tt.Description == "Serato Markers2")
+                        if (tagSerato.Description == "Serato Markers2")
                         {
-                            seratoMarkers = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
+                            serato.seratoMarkers = Encoding.UTF8.GetString(tagSerato.Data.Data);
+                            bExists = true;
                         }
-                        if (tt.Description == "Serato Overview")
+                        if (tagSerato.Description == "Serato Overview")
                         {
-                            seratoOverview = BitConverter.ToString(Encoding.UTF8.GetBytes(tt.Data.ToString()));
+                            serato.seratoOverview = Encoding.UTF8.GetString(tagSerato.Data.Data);
+                            bExists = true;
                         }
                     }
                 }
             }
             if (ogg != null)
             {
-                seratoAnalysisb64 = ogg.GetField("SERATO_ANALYSIS");
-                seratoMarkersb64 = ogg.GetField("SERATO_MARKERS_V2");
-            }
-                //                seratoInput[0] += (seratoInput[0].Length % 4 == 0)?"":string.Concat(Enumerable.Repeat('=', 4 - seratoInput[0].Length % 4));
-            if (seratoAnalysisb64[0].Length > 0 && seratoAnalysisb64[0].Length % 4 == 0)
-            {
-                byte[] data = Convert.FromBase64String(seratoAnalysisb64[0]);
-                seratoAnalysis = Encoding.UTF8.GetString(data);
-                bExists = true;
-            }
-
-/*                seratoInput[0] = seratoInput[0].Replace("\n", "");
-                seratoInput[0] += (seratoInput[0].Length % 4 == 0)?"":string.Concat(Enumerable.Repeat('=', 4 - seratoInput[0].Length % 4));
-                if (seratoInput[0].Length > 0 && seratoInput[0].Length % 4 == 0)
+                string[] seratoInput = ogg.GetField("SERATO_ANALYSIS");
+                if (seratoInput[0].Length > 0 )
                 {
-                    byte[] data = Convert.FromBase64String(seratoInput[0]);
-                    seratoMarkers = Encoding.UTF8.GetString(data);
-                    bExists = true;
+                    try
+                    {
+                        for (int i = 0; i < seratoInput.Length; i++)
+                        {
+                            serato.seratoAnalysis += Encoding.UTF8.GetString(Convert.FromBase64String(seratoInput[i]));
+//                            ByteVector data = new ByteVector(Convert.FromBase64String(seratoInput[i]));
+//                            seratoAnalysis += Encoding.UTF8.GetString(data.Data);
+                        }
+                        //byte[] data = Convert.FromBase64String(seratoInput[0]);
+                        //seratoAnalysis = Encoding.UTF8.GetString(data);
+                        bExists = true;
+                    }
+                    catch { }
                 }
-                seratoInput = ogg.GetField("SERATO_AUTOGAIN");
+
+                seratoInput = ogg.GetField("SERATO_MARKERS_V2");
+                //seratoInput[0] = seratoInput[0].Replace("\n", "");
+                //seratoInput[0] += (seratoInput[0].Length % 4 == 0) ? "" : string.Concat(Enumerable.Repeat('=', 4 - seratoInput[0].Length % 4));
+                if (seratoInput[0].Length > 0 )//&& seratoInput[0].Length % 4 == 0)
+                {
+                    try
+                    {
+                        for (int i = 0; i < seratoInput.Length; i++)
+                        {
+                            ByteVector data = new ByteVector(Convert.FromBase64String(seratoInput[i]));
+                            serato.seratoMarkers += data.ToString();
+                        }
+                        //byte[] data = Convert.FromBase64String(seratoInput[0]);
+                        //seratoMarkers = Encoding.UTF8.GetString(data);
+                        bExists = true;
+                    }
+                    catch { }
+                }
                 seratoInput[0] = seratoInput[0].Replace("\n", "");
+                seratoInput = ogg.GetField("SERATO_AUTOGAIN");
                 seratoInput[0] += (seratoInput[0].Length % 4 == 0) ? "" : string.Concat(Enumerable.Repeat('=', 4 - seratoInput[0].Length % 4));
                 if (seratoInput[0].Length > 0)
                 {
-                    byte[] data = Convert.FromBase64String(seratoInput[0]);
-                    seratoAutogain = Encoding.UTF8.GetString(data);
-                    bExists = true;
+                    try
+                    {
+                        for (int i = 0; i < seratoInput.Length; i++)
+                        {
+                            ByteVector data = new ByteVector(Convert.FromBase64String(seratoInput[i]));
+                            serato.seratoAutogain += Encoding.UTF8.GetString(data.Data);
+                        }
+                        //byte[] data = Convert.FromBase64String(seratoInput[0]);
+                        //seratoAutogain = Encoding.UTF8.GetString(data);
+                        bExists = true;
+                    }
+                    catch { }
                 }
                 seratoInput = ogg.GetField("SERATO_BEATGRID");
                 seratoInput[0] = seratoInput[0].Replace("\n", "");
                 seratoInput[0] += (seratoInput[0].Length % 4 == 0) ? "" : string.Concat(Enumerable.Repeat('=', 4 - seratoInput[0].Length % 4));
                 if (seratoInput[0].Length > 0 && seratoInput[0].Length % 4 == 0)
                 {
-                    byte[] data = Convert.FromBase64String(seratoInput[0]);
-                    seratoBeatgrid = Encoding.UTF8.GetString(data);
-                    bExists = true;
+                    try
+                    {
+                        for (int i = 0; i < seratoInput.Length; i++)
+                        {
+                            ByteVector data = new ByteVector(Convert.FromBase64String(seratoInput[i]));
+                            serato.seratoBeatgrid += data.ToString();
+                        }
+                        //byte[] data = Convert.FromBase64String(seratoInput[0]);
+                        //seratoBeatgrid = Encoding.UTF8.GetString(data);
+                        bExists = true;
+                    }
+                    catch { }
                 }
                 seratoInput = ogg.GetField("SERATO_OVERVIEW");
                 seratoInput[0] = seratoInput[0].Replace("\n", "");
                 seratoInput[0] += (seratoInput[0].Length % 4 == 0) ? "" : string.Concat(Enumerable.Repeat('=', 4 - seratoInput[0].Length % 4));
                 if (seratoInput[0].Length > 0 && seratoInput[0].Length % 4 == 0)
                 {
-                    byte[] data = Convert.FromBase64String(seratoInput[0]);
-                    seratoOverview = Encoding.UTF8.GetString(data);
-                    bExists = true;
+                    try
+                    {
+                        for (int i = 0; i < seratoInput.Length; i++)
+                        {
+                            ByteVector data = new ByteVector(Convert.FromBase64String(seratoInput[i]));
+                            serato.seratoOverview += data.ToString();
+                        }
+                        //byte[] data = Convert.FromBase64String(seratoInput[0]);
+                        //seratoOverview = Encoding.UTF8.GetString(data);
+                        bExists = true;
+                    }
+                    catch { }
                 }
                 seratoInput = ogg.GetField("SERATO_RELVOL");
                 seratoInput[0] = seratoInput[0].Replace("\n", "");
                 seratoInput[0] += (seratoInput[0].Length % 4 == 0) ? "" : string.Concat(Enumerable.Repeat('=', 4 - seratoInput[0].Length % 4));
                 if (seratoInput[0].Length > 0 && seratoInput[0].Length % 4 == 0)
                 {
-                    byte[] data = Convert.FromBase64String(seratoInput[0]);
-                    seratoRelVol = Encoding.UTF8.GetString(data);
-                    bExists = true;
+                    try
+                    {
+                        for (int i = 0; i < seratoInput.Length; i++)
+                        {
+                            ByteVector data = new ByteVector(Convert.FromBase64String(seratoInput[i]));
+                            serato.seratoRelVol += data.ToString();
+                        }
+                        //byte[] data = Convert.FromBase64String(seratoInput[0]);
+                        //seratoRelVol = Encoding.UTF8.GetString(data);
+                        bExists = true;
+                    }
+                    catch { }
                 }
                 seratoInput = ogg.GetField("SERATO_VIDEO_ASSOC");
                 seratoInput[0] = seratoInput[0].Replace("\n", "");
                 seratoInput[0] += (seratoInput[0].Length % 4 == 0) ? "" : string.Concat(Enumerable.Repeat('=', 4 - seratoInput[0].Length % 4));
                 if (seratoInput[0].Length > 0 && seratoInput[0].Length % 4 == 0)
                 {
-                    byte[] data = Convert.FromBase64String(seratoInput[0]);
-                    seratoVideoAssoc = Encoding.UTF8.GetString(data);
-                    bExists = true;
+                    try
+                    {
+                        for (int i = 0; i < seratoInput.Length; i++)
+                        {
+                            ByteVector data = new ByteVector(Convert.FromBase64String(seratoInput[i]));
+                            serato.seratoVideoAssoc += data.ToString();
+                        }
+                        //byte[] data = Convert.FromBase64String(seratoInput[0]);
+                        //seratoVideoAssoc = Encoding.UTF8.GetString(data);
+                        bExists = true;
+                    }
+                    catch { }
                 }
             }
-*/
             //            currentFile.Mode = TagLib.File.AccessMode.Read;
             //            long seratoData = currentFile.Find(Serato_Autotags_Identifier_ID3); //Find in MP3 files
             //            if (seratoData > 0) return true;
