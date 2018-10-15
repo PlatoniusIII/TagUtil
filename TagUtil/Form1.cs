@@ -691,7 +691,11 @@ namespace TagUtil
                 string[] words = serato.seratoMarkers.Substring(2).Split('\0');
                 ValidateBase64EncodedString(words[0]);
                 if (IsBase64String(words[0]))
-                    result += Encoding.UTF8.GetString(Convert.FromBase64String(words[0]));
+                    result += Encoding.UTF8.GetString(Convert.FromBase64String(ValidateBase64EncodedString(words[0])));
+                if (result.Length > 0)
+                {
+                    string[] Markers = result.Substring(2).Split('\0');
+                }
             }
 
             return bExists;
