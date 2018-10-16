@@ -74,6 +74,8 @@
             this.editSeratoAutotags = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.editSeratoMarkers = new System.Windows.Forms.TextBox();
+            this.labelSeratoMarkers = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
             this.SuspendLayout();
             // 
@@ -447,11 +449,29 @@
             this.label2.TabIndex = 46;
             this.label2.Text = "Serato";
             // 
+            // editSeratoMarkers
+            // 
+            this.editSeratoMarkers.Location = new System.Drawing.Point(81, 438);
+            this.editSeratoMarkers.Name = "editSeratoMarkers";
+            this.editSeratoMarkers.Size = new System.Drawing.Size(414, 20);
+            this.editSeratoMarkers.TabIndex = 48;
+            // 
+            // labelSeratoMarkers
+            // 
+            this.labelSeratoMarkers.AutoSize = true;
+            this.labelSeratoMarkers.Location = new System.Drawing.Point(13, 441);
+            this.labelSeratoMarkers.Name = "labelSeratoMarkers";
+            this.labelSeratoMarkers.Size = new System.Drawing.Size(45, 13);
+            this.labelSeratoMarkers.TabIndex = 47;
+            this.labelSeratoMarkers.Text = "Markers";
+            // 
             // TagDetailInfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(508, 756);
+            this.Controls.Add(this.editSeratoMarkers);
+            this.Controls.Add(this.labelSeratoMarkers);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.editSeratoAutotags);
             this.Controls.Add(this.label1);
@@ -555,5 +575,7 @@
         private System.Windows.Forms.TextBox editSeratoAutotags;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox editSeratoMarkers;
+        private System.Windows.Forms.Label labelSeratoMarkers;
     }
 }

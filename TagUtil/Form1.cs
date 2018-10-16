@@ -41,6 +41,23 @@ namespace TagUtil
 
         public class serato_struct
         {
+            public struct seratoRaw
+            {
+                public string Type { set; get; }
+                public string Name { set; get; }
+                public byte[] data;
+            }
+
+            public struct Markers
+            {
+                public void Init()
+                {
+                    Name = string.Empty;
+                }
+                public string Name { set; get; }
+                public byte[] raw { set; get; }
+            }
+
             public void Init()
             {
                 seratoAnalysis = string.Empty;
@@ -55,6 +72,12 @@ namespace TagUtil
                 BPM = 0.0;
                 tag2 = 0.0;
                 tag3 = 0.0;
+                AutoGain = 0.0;
+
+                for (int i = 0; i < markers.Length; i++)
+                {
+                    markers[i].Init();
+                }
             }
             public string seratoAnalysis { set; get; }
             public string seratoAutogain { set; get; }
@@ -68,7 +91,11 @@ namespace TagUtil
             public double BPM { set; get; }
             public double tag2 { set; get; }
             public double tag3 { set; get; }
-
+            public Markers[] markers = new Markers[8];
+            public string Color { set; get; }
+            public string BPMLock { set; get; }
+            public double AutoGain { set; get; }
+            public List<seratoRaw> dataRaw;
         }
         public serato_struct serato;
 
@@ -92,9 +119,23 @@ namespace TagUtil
 
         XMLsetting.AppSettings appSettings;
 
+        /// <summary>
+        ///    Normalize, verify and pad string for Base64-decoding
+        ///    if necessary. 
+        /// </summary>
+        /// <value>
+        ///    A <see cref="string" /> object containing the santized string with
+        ///    padding if necessary.
+        /// </value>
+        /// <remarks>
+        ///    Serato has the habit of ending with a null, so it's possible 
+        ///    the last quartet of characters just has a single A.
+        ///    I'm not sure if adding "A==" actually adds an unwanted '\0'.
+        /// </remarks>
         private static string ValidateBase64EncodedString(string inputText)
         {
             string stringToValidate = inputText;
+            stringToValidate = stringToValidate.Replace("\n", ""); // Would mess up regex and counts
             stringToValidate = stringToValidate.Replace('-', '+'); // 62nd char of encoding
             stringToValidate = stringToValidate.Replace('_', '/'); // 63rd char of encoding
             switch (stringToValidate.Length % 4) // Pad with trailing '='s
@@ -102,6 +143,11 @@ namespace TagUtil
                 case 0: break; // No pad chars in this case
                 case 2: stringToValidate += "=="; break; // Two pad chars
                 case 3: stringToValidate += "="; break; // One pad char
+                    //I've seen base64 strings with an additional A at the end...
+                case 1: if (stringToValidate[stringToValidate.Length - 1] == 'A')
+                            stringToValidate += "A==";
+                        else throw new System.Exception("Illegal base64url string!");
+                    break; // No pad chars in this case
                 default:
                     throw new System.Exception(
              "Illegal base64url string!");
@@ -520,11 +566,7 @@ namespace TagUtil
         ///    Info is BASE64 encoded.
         /// </remarks>
         /// <returns>A <see cref="bool"/> to show if Serato tags are present</returns>
-        //ToDo Serato: Don't search whole file! Only tag space (How?)
-        //ToDo Serato: decode various parts and check contents
-        //MP3: tags are plain
-        //OGG: tags are base64 encoded
-        //Content:
+        /// 
         /// <remarks>
         ///    <para>I want to try and decode the Serato tags that are
         ///    written to the file.</para>
@@ -553,7 +595,8 @@ namespace TagUtil
         ///       <item>
         ///          <term>Serato Analysis</term>
         ///          <term>application/octet-stream</term>
-        ///          <description>Unknown</description>
+        ///          <description>Just 2 bytes or 1 short.
+        ///          Seems to be 0x02 0x01.</description>
         ///       </item>
         ///       <item>
         ///          <term>Serato Autogain</term>
@@ -563,7 +606,7 @@ namespace TagUtil
         ///       <item>
         ///          <term>Serato Autotags</term>
         ///          <term>application/octet-stream</term>
-        ///          <description>Seems to contain at least the BPM</description>
+        ///          <description>Seems to contain at least the BPM, only on MP3</description>
         ///       </item>
         ///       <item>
         ///          <term>Serato Beatgrid</term>
@@ -580,8 +623,8 @@ namespace TagUtil
         ///          <term>Serato Markers 2</term>
         ///          <term>application/octet-stream</term>
         ///          <description>Current format in which cue points are stored.
-        ///          This should have some form of encoding, as the cue names should
-        ///          also be in here.</description>
+        ///          Data itself is base64 encoded. Contains info for 8 cue points
+        ///          as well as a section COLOR and BPMLOCK.</description>
         ///       </item>
         ///       <item>
         ///          <term>Serato Offsets</term>
@@ -664,11 +707,13 @@ namespace TagUtil
                 serato.seratoAnalysis = DecodeSeratoFlac("SERATO_ANALYSIS");
                 serato.seratoMarkers = DecodeSeratoFlac("SERATO_MARKERS_V2");
                 serato.seratoAutogain = DecodeSeratoFlac("SERATO_AUTOGAIN");
-                serato.seratoBeatgrid = DecodeSeratoFlac("SERATO_BEATGRID");
-                serato.seratoOverview = DecodeSeratoFlac("SERATO_OVERVIEW");
-                serato.seratoRelVol = DecodeSeratoFlac("SERATO_RELVOL");
-                serato.seratoVideoAssoc = DecodeSeratoFlac("SERATO_VIDEO_ASSOC");
-                if (serato.seratoOverview.Length > 0) bExists = true;
+                serato.seratoBeatgrid = BitConverter.ToString(Encoding.Default.GetBytes(DecodeSeratoFlac("SERATO_BEATGRID")));
+                serato.seratoOverview = BitConverter.ToString(Encoding.Default.GetBytes(DecodeSeratoFlac("SERATO_OVERVIEW")));
+                serato.seratoRelVol = BitConverter.ToString(Encoding.Default.GetBytes(DecodeSeratoFlac("SERATO_RELVOL")));
+                serato.seratoVideoAssoc = BitConverter.ToString(Encoding.Default.GetBytes(DecodeSeratoFlac("SERATO_VIDEO_ASSOC")));
+                if (serato.seratoOverview.Length > 0 ||
+                    serato.seratoAnalysis.Length > 0 ||
+                    serato.seratoMarkers.Length > 0 ) bExists = true;
             }
 
 
@@ -689,16 +734,53 @@ namespace TagUtil
             {
                 string result = string.Empty;
                 string[] words = serato.seratoMarkers.Substring(2).Split('\0');
-                ValidateBase64EncodedString(words[0]);
-                if (IsBase64String(words[0]))
-                    result += Encoding.UTF8.GetString(Convert.FromBase64String(ValidateBase64EncodedString(words[0])));
+                result += Encoding.UTF8.GetString(Convert.FromBase64String(ValidateBase64EncodedString(words[0])));
                 if (result.Length > 0)
                 {
-                    string[] Markers = result.Substring(2).Split('\0');
+                    int nFoundPos = -1; //Skip 2 \u0001 start bytes used as separator
+                    int nStringPos = 2;
+                    if (result.Contains("CUE")) //We have 1 or more CUEs
+                    {
+                        for (int i = 0; i < 8; i++)
+                        {
+                            int nEnd = -1;
+                            int nStringStart = -1;
+                            nFoundPos = result.IndexOf("CUE", nStringPos);
+                            if (nFoundPos == -1) break;
+                            //if (nFoundPos + 20 > result.Length) break;
+                            //Check with less than 8 cues
+                            //For some reason all CUEs are 29 bytes - except cue 2 is 28 bytes...
+                            //Is able to find "BPMLOCK" if last marker doesn't have a name?
+                            nEnd = result.IndexOf("\0", nFoundPos + 20);
+                            if (nEnd == -1) break;
+                            serato.markers[i].raw = Encoding.ASCII.GetBytes(result.Substring(nFoundPos, nEnd - nFoundPos));
+                            nStringStart = result.LastIndexOf("\0", nEnd - 1);
+                            serato.markers[i].Name = result.Substring(nStringStart + 1, nEnd - nStringStart - 1);
+                            nStringPos = nEnd + 1;
+                            Debug.WriteLine("Marker {0} length {1}", i, serato.markers[i].raw.Length);
+                        }
+                    }
+                    //Check for COLOR and BPMLOCK
+                    nFoundPos = result.IndexOf("COLOR");
+                    if (nFoundPos > -1) //We have COLOR info
+                    {
+                        serato.Color = result.Substring(nFoundPos);
+                    }
+                    nFoundPos = result.IndexOf("BPMLOCK"); //We have BPMLOCK info
+                    if (nFoundPos > -1)
+                    {
+                        serato.BPMLock = result.Substring(nFoundPos);
+                    }
                 }
             }
+            if (serato.seratoAutogain.Length > 0)
+            {
+                double temp = 0.0;
+                double.TryParse(serato.seratoAutogain.Substring(2), System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo, out temp);
+                serato.AutoGain = temp;
+            }
 
-            return bExists;
+                return bExists;
         }
 
         /// <summary>
@@ -713,22 +795,62 @@ namespace TagUtil
         {
             string[] seratoInput = ogg.GetField(FieldName);
             string result = string.Empty;
-
+            formMain.serato_struct.seratoRaw newTag = new serato_struct.seratoRaw();
+            byte[] test = new byte[0];
             if (seratoInput[0].Length > 0)
             {
                 try
                 {
                     for (int i = 0; i < seratoInput.Length; i++)
                     {
-                        result += Encoding.UTF8.GetString(Convert.FromBase64String(ValidateBase64EncodedString(seratoInput[i])));
+                        if( i == 1) { throw new System.Exception("Only first string should be filled"); }
+                        test = Convert.FromBase64String(ValidateBase64EncodedString(seratoInput[i]));
+//                        string full = Encoding.Default.GetString(test);
+//                        int end_of_string = full.IndexOf("\0");
+//                        if( end_of_string > -1)
+//                            newTag.Type = full.Substring(0, end_of_string);
+
+                        result += Encoding.ASCII.GetString(Convert.FromBase64String(ValidateBase64EncodedString(seratoInput[i])));
                         //                            ByteVector data = new ByteVector(Convert.FromBase64String(seratoInput[i]));
                         //                            seratoAnalysis += Encoding.UTF8.GetString(data.Data);
-                        string[] words = result.Split('\0');
-                        result = words[3]; //Seems to work for all but Video Assoc
+                        //string[] words = result.Split('\0');
+                        //result = words[3]; //Seems to work for all but Video Assoc
                         //int end_of_type = result.IndexOf('\0', 0); //@ null-characters after type
                         //int end_of_header = result.IndexOf('\0', end_of_type+2);
                         //result = result.Substring(end_of_header + 1, result.Length - end_of_header - 2);
                     }
+                    string temp = string.Empty;
+                    newTag.data = new byte[0];
+                    for (int i = 0; i < test.Length; i++)
+                    {
+                        if (string.IsNullOrEmpty(newTag.Name))
+                        {
+                            if (test[i] != '\0')
+                            {
+                                temp += ((char)test[i]).ToString();
+                            }
+                            else
+                            {
+                                if (temp.Length > 0)
+                                {
+                                    if (string.IsNullOrEmpty(newTag.Type))
+                                    {
+                                        newTag.Type = temp;
+                                    }
+                                    else if (string.IsNullOrEmpty(newTag.Name))
+                                    {
+                                        newTag.Name = temp;
+                                        newTag.data = new byte[test.Length - i - 1];
+                                        Array.Copy(test, i + 1, newTag.data, 0, test.Length - i - 2); //-2, remove first and last \0
+                                        break;
+                                    }
+                                }
+                                temp = string.Empty;
+                            }
+                        }
+                    }
+                    serato.dataRaw.Add(newTag);
+                    result = result.Substring(result.IndexOf("\0",result.IndexOf("Serato"))+1);
                 }
                 catch (Exception e)
                 {

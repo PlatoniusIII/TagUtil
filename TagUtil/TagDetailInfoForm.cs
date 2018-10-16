@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
+using System.Text;
 
 namespace TagUtil
 {
@@ -82,11 +83,26 @@ namespace TagUtil
 
             if( mainFrm.ContainsSeratoData() )
             {
-                editSeratoAnalysis.Text = mainFrm.serato.seratoAnalysis;
+                editSeratoAnalysis.Text = BitConverter.ToString(Encoding.Default.GetBytes(mainFrm.serato.seratoAnalysis));
                 if (mainFrm.serato.seratoAutotags.Length > 0)
                     editSeratoAutotags.Text = "BPM: " + mainFrm.serato.BPM + " - tag2: " + mainFrm.serato.tag2 + " - tag3: " + mainFrm.serato.tag3;
                 else
                     editSeratoAutotags.Text = "Field not available";
+                string Markers = string.Empty;
+                for (int i = 0; i < 8; i++)
+                {
+                    if (mainFrm.serato.markers[i].Name != string.Empty )
+                    {
+                        if (Markers.Length > 0) Markers += "; ";
+                        Markers += mainFrm.serato.markers[i].Name;
+                    }
+                }
+                editSeratoMarkers.Text = Markers;
+            }
+            else
+            {
+                editSeratoMarkers.Text = "Field not available";
+                editSeratoAutotags.Text = "Field not available";
             }
 
             //            editGenre.Text = tagFile.Tag.Genres[0];
