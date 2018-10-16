@@ -730,6 +730,13 @@ namespace TagUtil
                 double.TryParse(words[2], System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo, out temp);
                 serato.tag3 = temp;
             }
+            foreach (var item in serato.dataRaw)
+            {
+                if( item.Name == "Serato Markers")
+                {
+
+                }
+            }
             if (serato.seratoMarkers.Length > 0)
             {
                 string result = string.Empty;
