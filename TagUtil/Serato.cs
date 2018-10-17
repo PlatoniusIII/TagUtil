@@ -30,6 +30,8 @@ namespace TagUtil
         /// </summary>
         public class Serato_struct
         {
+            public string[] MarkerTags = { "CUE", "LOOP", "COLOR", "BPMLOCK" };
+            
             public struct SeratoRaw
             {
                 public string Type { set; get; }
@@ -42,9 +44,11 @@ namespace TagUtil
                 public void Init()
                 {
                     Name = string.Empty;
+                    DataSize = -1;
                 }
                 public string Name { set; get; }
                 public byte[] raw { set; get; }
+                public int DataSize { set; get; }
             }
 
             public struct Loops
@@ -300,30 +304,52 @@ namespace TagUtil
                 //                int nFoundPos = -1; //Skip 2 \u0001 start bytes used as separator
                 //                int nStringPos = 2;
                 int nEnd;
+                Int32 Size;
                 for (int i = 2; i <serato_struct.seratoMarkers.Length; i++)
                 {
-                    string temp =serato_struct.seratoMarkers.Substring(i);
-                    if (serato_struct.seratoMarkers.Substring(i).StartsWith("CUE")) //We have a CUE - 21 bytes without name
+                    foreach (var item in serato_struct.MarkerTags)
                     {
-                        //4 bytes: CUE\0
-                        //4 bytes: length
-                        //1 byte: Cue number
-                        //4 bytes: position (what format?)
-                        //Position???
-                        //CUE 0 0 0 0 13 0 0 0 0  0   0 0 63  0  0 0 0 0
-                        //CUE 0 0 0 0 13 0 1 0 0  0   8 0 63 63  0 0 0 0
-                        //CUE 0 0 0 0 13 0 2 0 0  0 100 0  0  0 63 0 0 0
-                        //CUE 0 0 0 0 13 0 3 0 0  3  63 0 63 63  0 0 0 0
-                        //CUE 0 0 0 0 18 0 4 0 0  0   0 0  0 63  0 0 0"0 sec" 0
-                        //CUE 0 0 0 0 18 0 5 0 0 19  63 0 63  0 63 0 0"5 sec" 0
-                        nEnd = serato_struct.seratoMarkers.IndexOf("\0", i + 20); //Look if there is a name at the end
-                        if (nEnd == -1) break; //ToDo What to do here...
-                       serato_struct.markers[serato_struct.HighestMarker].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, nEnd - i));
-                        int nStringStart =serato_struct.seratoMarkers.LastIndexOf("\0", nEnd - 1);
-                       serato_struct.markers[serato_struct.HighestMarker].Name =serato_struct.seratoMarkers.Substring(nStringStart + 1, nEnd - nStringStart - 1);
-                       serato_struct.HighestMarker++;
-                        i = nEnd;
+                        if (serato_struct.seratoMarkers.Substring(i).StartsWith(item))
+                        {
+                            Size = BitConverter.ToInt32(Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i + item.Length + 1, 4)).Reverse().ToArray(), 0);
+                            switch (item)
+                            {
+                                case "CUE":
+                                    serato_struct.markers[serato_struct.HighestMarker].DataSize = Size;
+                                    serato_struct.markers[serato_struct.HighestMarker].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, 4+4+Size));
+                                    serato_struct.markers[serato_struct.HighestMarker].Name = serato_struct.seratoMarkers.Substring(i+20, Size+4+4 - 21);
+                                    serato_struct.HighestMarker++;
+                                    i += (Size + 4+4);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
                     }
+                    string temp =serato_struct.seratoMarkers.Substring(i);
+                    //if (serato_struct.seratoMarkers.Substring(i).StartsWith("CUE")) //We have a CUE - 21 bytes without name
+                    //{
+                    //    //4 bytes: CUE\0
+                    //    //4 bytes: length
+                    //    //1 byte: Cue number
+                    //    //4 bytes: position (what format?)
+                    //    //Position???
+                    //    //CUE 0 0 0 0 13 0 0 0 0  0   0 0 63  0  0 0 0 0
+                    //    //CUE 0 0 0 0 13 0 1 0 0  0   8 0 63 63  0 0 0 0
+                    //    //CUE 0 0 0 0 13 0 2 0 0  0 100 0  0  0 63 0 0 0
+                    //    //CUE 0 0 0 0 13 0 3 0 0  3  63 0 63 63  0 0 0 0
+                    //    //CUE 0 0 0 0 18 0 4 0 0  0   0 0  0 63  0 0 0"0 sec" 0
+                    //    //CUE 0 0 0 0 18 0 5 0 0 19  63 0 63  0 63 0 0"5 sec" 0
+                    //    nEnd = serato_struct.seratoMarkers.IndexOf("\0", i + 20); //Look if there is a name at the end
+                    //    if (nEnd == -1) break; //ToDo What to do here...
+                    //   serato_struct.markers[serato_struct.HighestMarker].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, nEnd - i));
+                    //    int nStringStart =serato_struct.seratoMarkers.LastIndexOf("\0", nEnd - 1);
+                    //   serato_struct.markers[serato_struct.HighestMarker].Name =serato_struct.seratoMarkers.Substring(nStringStart + 1, nEnd - nStringStart - 1);
+                    //   serato_struct.HighestMarker++;
+                    //    Size = BitConverter.ToInt32(Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i + 3 + 1, 4)).Reverse().ToArray(),0);
+                    //    //Int32 Size = BitConverter.ToInt32(Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i + 3 + 1 , 4).Reverse(),0,4 ),0);
+                    //    i = nEnd;
+                    //}
                     if (serato_struct.seratoMarkers.Substring(i).StartsWith("LOOP")) //We have a LOOP - 30 bytes without name
                     {
                         nEnd =serato_struct.seratoMarkers.IndexOf("\0", i + 29); //Look if there is a name at the end
