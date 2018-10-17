@@ -8,17 +8,17 @@ namespace TagUtil
 {
     public partial class TagDetailInfoForm : Form
     {
-        formMain mainFrm;
+        MainForm mainForm;
 
-        public TagDetailInfoForm( formMain parent )
+        public TagDetailInfoForm( MainForm parent )
         {
-            mainFrm = parent;
+            mainForm = parent;
             InitializeComponent();
         }
 
         private string ReadID3V2Tag(string tag)
         {
-            TagLib.Id3v2.TextInformationFrame frame = TagLib.Id3v2.TextInformationFrame.Get(mainFrm.id3v2, tag, false);
+            TagLib.Id3v2.TextInformationFrame frame = TagLib.Id3v2.TextInformationFrame.Get(mainForm.id3v2, tag, false);
             if (frame == null) return "";
             return frame.ToString();
         }
@@ -27,7 +27,7 @@ namespace TagUtil
         public void UpdateInfo( string file )
         {
 
-            TagLib.File tagFile = mainFrm.currentFile; // track is the name of the mp3
+            TagLib.File tagFile = mainForm.currentFile; // track is the name of the mp3
 
             editArtist.Text = string.Join("; ", tagFile.Tag.Performers); //tagFile.Tag.Performers[0];
             editTitle.Text = tagFile.Tag.Title;
@@ -53,12 +53,12 @@ namespace TagUtil
             editRemixer.Text = tagFile.Tag.RemixedBy;
 
             editComment.Text = tagFile.Tag.Comment;
-            if (mainFrm.id3v2 != null)
+            if (mainForm.id3v2 != null)
             {
-                TagLib.Id3v2.PlayCountFrame pcf = TagLib.Id3v2.PlayCountFrame.Get(mainFrm.id3v2, false);
+                TagLib.Id3v2.PlayCountFrame pcf = TagLib.Id3v2.PlayCountFrame.Get(mainForm.id3v2, false);
                 editPlaycount.Text = pcf == null ? "" : pcf.ToString();
 
-                TagLib.Id3v2.TextInformationFrame trackFrame = TagLib.Id3v2.TextInformationFrame.Get(mainFrm.id3v2, "TRCK", false);
+                TagLib.Id3v2.TextInformationFrame trackFrame = TagLib.Id3v2.TextInformationFrame.Get(mainForm.id3v2, "TRCK", false);
                 if (trackFrame != null)
                 {
                     if (trackFrame.Text[0].Contains("/"))
@@ -81,21 +81,49 @@ namespace TagUtil
                 }
             }
 
-            if( mainFrm.ContainsSeratoData() )
+            if( mainForm.serato.ContainsSeratoData() )
             {
-                editSeratoAnalysis.Text = BitConverter.ToString(Encoding.Default.GetBytes(mainFrm.serato.seratoAnalysis));
-                if (mainFrm.serato.seratoAutotags.Length > 0)
-                    editSeratoAutotags.Text = "BPM: " + mainFrm.serato.BPM + " - tag2: " + mainFrm.serato.tag2 + " - tag3: " + mainFrm.serato.tag3;
+                editSeratoAnalysis.Text = BitConverter.ToString(Encoding.Default.GetBytes(mainForm.serato.serato_struct.seratoAnalysis));
+                if (mainForm.serato.serato_struct.seratoAutotags.Length > 0)
+                    editSeratoAutotags.Text = "BPM: " + mainForm.serato.serato_struct.BPM + " - tag2: " + mainForm.serato.serato_struct.tag2 + " - tag3: " + mainForm.serato.serato_struct.tag3;
                 else
                     editSeratoAutotags.Text = "Field not available";
                 string Markers = string.Empty;
-                for (int i = 0; i < 8; i++)
+                if (mainForm.serato.serato_struct.HighestMarker > 0)
                 {
-                    if (mainFrm.serato.markers[i].Name != string.Empty )
+                    Markers += mainForm.serato.serato_struct.HighestMarker + " Cues ";
+                    string CueNames = string.Empty;
+                    for (int i = 0; i < 8; i++)
                     {
-                        if (Markers.Length > 0) Markers += "; ";
-                        Markers += mainFrm.serato.markers[i].Name;
+                        if (mainForm.serato.serato_struct.markers[i].Name != string.Empty)
+                        {
+                            if (CueNames.Length > 0) CueNames += "; ";
+                            else CueNames += "(";
+                            CueNames += mainForm.serato.serato_struct.markers[i].Name;
+                        }
                     }
+                    if( CueNames.Length > 1 ) Markers += CueNames + ")";
+
+                }
+                if (mainForm.serato.serato_struct.HighestLoop > 0)
+                {
+                    if (Markers.Length > 0) Markers += "; ";
+                    Markers += mainForm.serato.serato_struct.HighestLoop + " Loops ";
+                    string LoopNames = string.Empty;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (mainForm.serato.serato_struct.loops[i].Name != string.Empty)
+                        {
+                            if (LoopNames.Length > 0) LoopNames += "; ";
+                            else LoopNames += "(";
+                            LoopNames += mainForm.serato.serato_struct.loops[i].Name;
+                        }
+                    }
+                    if (LoopNames.Length > 1)
+                    {
+                        Markers += LoopNames + ")";
+                    }
+
                 }
                 editSeratoMarkers.Text = Markers;
             }

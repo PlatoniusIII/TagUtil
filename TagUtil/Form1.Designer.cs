@@ -2,7 +2,7 @@
 
 namespace TagUtil
 {
-    partial class formMain
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
