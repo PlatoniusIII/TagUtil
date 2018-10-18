@@ -138,46 +138,48 @@ namespace TagUtil
             FileInfoView.Items.Clear();
 
             //ToDo: Check if directory exists
-            foreach (string file in Directory.EnumerateFiles(editCurrentDirectory.Text, "*.*", SearchOption.AllDirectories)
-                .Where(s => extensions.Any(ext => ext == Path.GetExtension(s))))
+            if (Directory.Exists(editCurrentDirectory.Text))
             {
-                try
+                foreach (string file in Directory.EnumerateFiles(editCurrentDirectory.Text, "*.*", SearchOption.AllDirectories)
+                    .Where(s => extensions.Any(ext => ext == Path.GetExtension(s))))
                 {
-                    currentFile = TagLib.File.Create(file);
-                    ReadTags();
-//                    FillTagInfoStruct(file);
-                    //                    uint year = currentFile.Tag.Year;
-                    //bool vbr = IsVBR();
-                                        String[] itemStrings = { currentFile.Tag.Performers[0], currentFile.Tag.Title, currentFile.Tag.Album, currentFile.Tag.Year.ToString(), file, currentFile.Properties.AudioBitrate.ToString() };
-                                        ListViewItem item = new ListViewItem(itemStrings);
-                                        FileInfoView.Items.Add(item);
-                                        DataRow dr = tableTagUtil.NewRow();
-                    dr["Artist"] = currentFile.Tag.Performers[0];
-                    dr["Title"] = currentFile.Tag.Title;
-                    dr["Album"] = currentFile.Tag.Album;
-                    dr["Year"] = currentFile.Tag.Year;
-                    dr["File"] = file;
-                    dr["Bitrate"] = currentFile.Properties.AudioBitrate;
-                    tableTagUtil.Rows.Add(dr);
-//                    set.Tables.Add(tableTagUtil);
-                }
-                catch (TagLib.CorruptFileException)
-                {
-                                        String[] itemStrings = { "", "", "", "", file, "" };
-                                        ListViewItem item = new ListViewItem(itemStrings);
-                                        FileInfoView.Items.Add(item);
-                                        DataRow dr = tableTagUtil.NewRow();
-                                        dr["Artist"] = "";
-                                        dr["Title"] = "";
-                                        dr["Album"] = "";
-                                        dr["Year"] = 0;
-                                        dr["File"] = "";
-                                        dr["Bitrate"] = 0;
-                    tableTagUtil.Rows.Add(dr);
-//                    set.Tables.Add(tableTagUtil);
+                    try
+                    {
+                        currentFile = TagLib.File.Create(file);
+                        ReadTags();
+                        //                    FillTagInfoStruct(file);
+                        //                    uint year = currentFile.Tag.Year;
+                        //bool vbr = IsVBR();
+                        String[] itemStrings = { currentFile.Tag.Performers[0], currentFile.Tag.Title, currentFile.Tag.Album, currentFile.Tag.Year.ToString(), file, currentFile.Properties.AudioBitrate.ToString() };
+                        ListViewItem item = new ListViewItem(itemStrings);
+                        FileInfoView.Items.Add(item);
+                        DataRow dr = tableTagUtil.NewRow();
+                        dr["Artist"] = currentFile.Tag.Performers[0];
+                        dr["Title"] = currentFile.Tag.Title;
+                        dr["Album"] = currentFile.Tag.Album;
+                        dr["Year"] = currentFile.Tag.Year;
+                        dr["File"] = file;
+                        dr["Bitrate"] = currentFile.Properties.AudioBitrate;
+                        tableTagUtil.Rows.Add(dr);
+                        //                    set.Tables.Add(tableTagUtil);
+                    }
+                    catch (TagLib.CorruptFileException)
+                    {
+                        String[] itemStrings = { "", "", "", "", file, "" };
+                        ListViewItem item = new ListViewItem(itemStrings);
+                        FileInfoView.Items.Add(item);
+                        DataRow dr = tableTagUtil.NewRow();
+                        dr["Artist"] = "";
+                        dr["Title"] = "";
+                        dr["Album"] = "";
+                        dr["Year"] = 0;
+                        dr["File"] = "";
+                        dr["Bitrate"] = 0;
+                        tableTagUtil.Rows.Add(dr);
+                        //                    set.Tables.Add(tableTagUtil);
+                    }
                 }
             }
-
 /*            foreach (TagInfo tag in fileTags)
             {
                 String[] itemStrings = { tag.ID.ToString(), tag.Artist, tag.Title, tag.Album, tag.Year.ToString(), tag.file, tag.Bitrate.ToString() };

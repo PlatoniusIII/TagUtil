@@ -30,8 +30,22 @@ namespace TagUtil
         /// </summary>
         public class Serato_struct
         {
+            /// <summary>
+            ///   Possible tags in a Marker tag. 
+            /// </summary>
             public string[] MarkerTags = { "CUE", "LOOP", "COLOR", "BPMLOCK" };
-            
+            /// <summary>
+            ///   Default length of a Cue tag. 
+            /// </summary>
+            public const int TagCueLength = 20;
+            /// <summary>
+            ///   Default length of a Loop tag. 
+            /// </summary>
+            public const int TagLoopLength = 29;
+
+            /// <summary>
+            /// Struct that contains the data split in description, type and data
+            /// </summary>
             public struct SeratoRaw
             {
                 public string Type { set; get; }
@@ -39,26 +53,44 @@ namespace TagUtil
                 public byte[] data;
             }
 
-            public struct Markers
+            /// <summary>
+            /// Struct that contains all Cue data
+            /// </summary>
+            public struct CueMarkers
             {
                 public void Init()
                 {
                     Name = string.Empty;
                     DataSize = -1;
+                    Position = 0;
+                    Number = -1;
                 }
                 public string Name { set; get; }
                 public byte[] raw { set; get; }
                 public int DataSize { set; get; }
+                public int Position { set; get; }
+                public int Number { set; get; }
             }
 
-            public struct Loops
+            /// <summary>
+            /// Struct that contains all Loop data
+            /// </summary>
+            public struct LoopMarkers
             {
                 public void Init()
                 {
                     Name = string.Empty;
+                    DataSize = -1;
+                    Number = -1;
+                    PositionStart = 0;
+                    PositionEnd = 0;
                 }
                 public string Name { set; get; }
                 public byte[] raw { set; get; }
+                public int DataSize { set; get; }
+                public int PositionStart { set; get; }
+                public int PositionEnd { set; get; }
+                public int Number { set; get; }
             }
 
             public void Init()
@@ -68,6 +100,7 @@ namespace TagUtil
                 seratoAutotags = string.Empty;
                 seratoBeatgrid = string.Empty;
                 seratoMarkers = string.Empty;
+                seratoMarkersRaw = new byte[0];
                 seratoOverview = string.Empty;
                 seratoRelVol = string.Empty;
                 seratoVideoAssoc = string.Empty;
@@ -91,24 +124,36 @@ namespace TagUtil
                     loops[i].Init();
                 }
             }
+
+            /// <summary>
+            /// For now keep all data in both binary and string format
+            /// </summary>
             public string seratoAnalysis { set; get; }
+            public byte[] seratoAnalysisRaw { set; get; }
             public string seratoAutogain { set; get; }
+            public byte[] seratoAutogainRaw { set; get; }
             public string seratoAutotags { set; get; }
+            public byte[] seratoAutotagsRaw { set; get; }
             public string seratoBeatgrid { set; get; }
+            public byte[] seratoBeatgridRaw { set; get; }
             public string seratoMarkers { set; get; }
+            public byte[] seratoMarkersRaw { set; get; }
             public string seratoOverview { set; get; }
+            public byte[] seratoOverviewRaw { set; get; }
             public string seratoRelVol { set; get; }
+            public byte[] seratoRelVolRaw { set; get; }
             public string seratoVideoAssoc { set; get; }
+            public byte[] seratoVideoAssocRaw { set; get; }
 
             public double BPM { set; get; }
-            public double tag2 { set; get; }
-            public double tag3 { set; get; }
-            public Markers[] markers = new Markers[8];
+            public double tag2 { set; get; } //Gain?
+            public double tag3 { set; get; } //Only seen it as 0
+            public CueMarkers[] markers = new CueMarkers[8];
             public int HighestMarker { set; get; }
-            public Loops[] loops = new Loops[4];
+            public LoopMarkers[] loops = new LoopMarkers[4];
             public int HighestLoop { set; get; }
-            public string Color { set; get; }
-            public string BPMLock { set; get; }
+            public byte[] Color { set; get; }
+            public byte[] BPMLock { set; get; }
             public double AutoGain { set; get; }
             public List<SeratoRaw> dataRaw = new List<SeratoRaw>();
         }
@@ -211,192 +256,184 @@ namespace TagUtil
 
             serato_struct.Init();
 
-            if (mainForm.id3v2 != null)
-            {
-                foreach (TagLib.Id3v2.Frame f in mainForm.id3v2.GetFrames())
-                {
-                    if (f is TagLib.Id3v2.AttachmentFrame)
-                    {
-                        TagLib.Id3v2.AttachmentFrame tagSerato = ((TagLib.Id3v2.AttachmentFrame)f);
-                        if (tagSerato.Description == "Serato Analysis")
-                        {
-                           serato_struct.seratoAnalysis = Encoding.ASCII.GetString(tagSerato.Data.Data);
-                            bExists = true;
-                        }
-                        if (tagSerato.Description == "Serato Autotags")
-                        {
-                           serato_struct.seratoAutotags = Encoding.ASCII.GetString(tagSerato.Data.Data);
-                            bExists = true;
-                        }
-                        if (tagSerato.Description == "Serato Autogain")
-                        {
-                           serato_struct.seratoAutogain = Encoding.ASCII.GetString(tagSerato.Data.Data);
-                            bExists = true;
-                        }
-                        if (tagSerato.Description == "Serato BeatGrid")
-                        {
-                           serato_struct.seratoBeatgrid = Encoding.ASCII.GetString(tagSerato.Data.Data);
-                            bExists = true;
-                        }
-                        if (tagSerato.Description == "Serato Markers_")
-                        {
-                           serato_struct.seratoMarkers = tagSerato.Data.ToString();
-                            bExists = true;
-                        }
-                        if (tagSerato.Description == "Serato Markers2")
-                        {
-                           serato_struct.seratoMarkers = Encoding.ASCII.GetString(tagSerato.Data.Data);
-                            bExists = true;
-                        }
-                        if (tagSerato.Description == "Serato Overview")
-                        {
-                           serato_struct.seratoOverview = Encoding.ASCII.GetString(tagSerato.Data.Data);
-                            bExists = true;
-                        }
-                    }
-                }
-            }
-            if (mainForm.ogg != null)
-            {
-               serato_struct.seratoAnalysis = DecodeSeratoFlac("SERATO_ANALYSIS");
-               serato_struct.seratoMarkers = DecodeSeratoFlac("SERATO_MARKERS_V2");
-               serato_struct.seratoAutotags = DecodeSeratoFlac("SERATO_AUTOGAIN");
-               serato_struct.seratoBeatgrid = DecodeSeratoFlac("SERATO_BEATGRID");
-               serato_struct.seratoOverview = DecodeSeratoFlac("SERATO_OVERVIEW");
-               serato_struct.seratoRelVol = DecodeSeratoFlac("SERATO_RELVOL");
-               serato_struct.seratoVideoAssoc = DecodeSeratoFlac("SERATO_VIDEO_ASSOC");
-                if (serato_struct.seratoOverview.Length > 0 ||
-                   serato_struct.seratoAnalysis.Length > 0 ||
-                   serato_struct.seratoMarkers.Length > 0) bExists = true;
-            }
+            //Try and parse fields
+            bExists = SeratoReadID3();
+            bExists |= SeratoReadXiph();
+
 
 
             // See https://stackoverflow.com/questions/41850029/string-parsing-techniques for parsing info
 
+
             //Convert tags more if needed
-            foreach (var item in serato_struct.dataRaw)
-            {
-                if (item.Name == "Serato Markers2")
-                {
-                    string ToDecode = Encoding.ASCII.GetString(item.data);
-                    ToDecode = ToDecode.Substring(2, ToDecode.IndexOf('\0') - 2);
-                   serato_struct.seratoMarkers = Encoding.ASCII.GetString(Convert.FromBase64String(ValidateBase64EncodedString(ToDecode)));
-                    //byte[] test = Convert.FromBase64String(ValidateBase64EncodedString(ToDecode));
-                }
-            }
+            //foreach (var item in serato_struct.dataRaw)
+            //{
+            //    if (item.Name == "Serato Markers2")
+            //    {
+            //        string ToDecode = Encoding.ASCII.GetString(item.data);
+            //        ToDecode = ToDecode.Substring(2, ToDecode.IndexOf('\0') - 2);
+            //       serato_struct.seratoMarkersRaw = Convert.FromBase64String(ValidateBase64EncodedString(ToDecode));
+            //       serato_struct.seratoMarkers = Encoding.ASCII.GetString(Convert.FromBase64String(ValidateBase64EncodedString(ToDecode)));
+            //        //byte[] test = Convert.FromBase64String(ValidateBase64EncodedString(ToDecode));
+            //    }
+            //}
             //Parse tags
             //ToDo maybe give each tag it's own function
+            ParseSeratoAutotagsTag();
+            ParseSeratoMarkersTag();
+            ParseSeratoAutogainTag();
+
+            return bExists;
+        }
+
+        #region Parse helper functions
+
+        /// <summary>
+        ///   Parse the Serato Autotags tag
+        /// </summary>
+        /// <remarks>
+        ///   The Autotags/Autogain tag contains the BPM of the song
+        ///   as well as 2 other floats. One probably being the gain.
+        /// </remarks>
+        private void ParseSeratoAutotagsTag()
+        {
             if (serato_struct.seratoAutotags.Length > 0)
             {
                 double temp;
-                string[] words =serato_struct.seratoAutotags.Substring(2).Split('\0');
+                string[] words = serato_struct.seratoAutotags.Substring(2).Split('\0');
                 double.TryParse(words[0], System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo, out temp);
-               serato_struct.BPM = temp;// Convert.ToDouble(serato.seratoAutotags.Substring(2, serato.seratoAutotags.IndexOf('\0', 2) - 1));
+                serato_struct.BPM = temp;// Convert.ToDouble(serato.seratoAutotags.Substring(2, serato.seratoAutotags.IndexOf('\0', 2) - 1));
                 double.TryParse(words[1], System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo, out temp);
-               serato_struct.tag2 = temp;
+                serato_struct.tag2 = temp;
                 double.TryParse(words[2], System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo, out temp);
-               serato_struct.tag3 = temp;
+                serato_struct.tag3 = temp;
             }
+        }
+
+        /// <summary>
+        ///   Parse the Serato Autogain tag
+        /// </summary>
+        /// <remarks>
+        ///    Probably contains the autogain value
+        /// </remarks>
+        private void ParseSeratoAutogainTag()
+        {
+            if (serato_struct.seratoAutogain.Length > 0)
+            {
+                double temp = 0.0;
+                double.TryParse(serato_struct.seratoAutogain.Substring(2), System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo, out temp);
+                serato_struct.AutoGain = temp;
+            }
+        }
+
+        /// <summary>
+        ///   Parse the Serato Markers V2 tag
+        /// </summary>
+        /// <remarks>
+        ///    The Markers V2 tag contains cue points, loops,
+        ///    color tags and a BPMLOCK tag.
+        /// </remarks>
+        private void ParseSeratoMarkersTag()
+        {
             //Markers tag contains CUEs (and their color codes) and Loops
             //ToDo: find out what color does, can occur multiple times in tag
             if (serato_struct.seratoMarkers.Length > 0)
             {
+                //Data part of the markers tag is itself again Base64 encoded
+                string ToDecode = serato_struct.seratoMarkers.Substring(2, serato_struct.seratoMarkers.IndexOf('\0') - 2);
+                serato_struct.seratoMarkersRaw = Convert.FromBase64String(ValidateBase64EncodedString(ToDecode));
+                serato_struct.seratoMarkers = Encoding.ASCII.GetString(serato_struct.seratoMarkersRaw);
                 //                int nFoundPos = -1; //Skip 2 \u0001 start bytes used as separator
                 //                int nStringPos = 2;
-                int nEnd;
+                //int nEnd;
                 Int32 Size;
-                for (int i = 2; i <serato_struct.seratoMarkers.Length; i++)
+                for (int i = 2; i < serato_struct.seratoMarkers.Length; i++)
                 {
+                    string temp = serato_struct.seratoMarkers.Substring(i);
                     foreach (var item in serato_struct.MarkerTags)
                     {
                         if (serato_struct.seratoMarkers.Substring(i).StartsWith(item))
                         {
-                            Size = BitConverter.ToInt32(Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i + item.Length + 1, 4)).Reverse().ToArray(), 0);
+                            Size = BitConverter.ToInt32(serato_struct.seratoMarkersRaw.Skip(i + item.Length + 1).Take(4).Reverse().ToArray(), 0);
                             switch (item)
                             {
                                 case "CUE":
+                                    //4 bytes: 'CUE\0'
+                                    //4 bytes: length of data part
+                                    //2 bytes: cue number
+                                    //4 bytes: position
+                                    //4 bytes: color??? (last always 0)
+                                    //1 byte: '\0'
+                                    //X bytes: Label of Cue + '\0'
+                                    //CUE 0 0 0 0 13 0 0 0 0  0   0 0 204   0   0 0 0 0
+                                    //CUE 0 0 0 0 13 0 1 0 0  0   8 0 204 136   0 0 0 0
+                                    //CUE 0 0 0 0 13 0 2 0 0  0 100 0   0   0 204 0 0 0
+                                    //CUE 0 0 0 0 13 0 3 0 0  3 234 0 204 204   0 0 0 0
+                                    //CUE 0 0 0 0 18 0 4 0 0  0   0 0   0 204   0 0 0"0 sec" 0
+                                    //CUE 0 0 0 0 18 0 5 0 0 19 136 0 204   0 204 0 0"5 sec" 0
                                     serato_struct.markers[serato_struct.HighestMarker].DataSize = Size;
-                                    serato_struct.markers[serato_struct.HighestMarker].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, 4+4+Size));
-                                    serato_struct.markers[serato_struct.HighestMarker].Name = serato_struct.seratoMarkers.Substring(i+20, Size+4+4 - 21);
+                                    //serato_struct.markers[serato_struct.HighestMarker].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, 4+4+Size));
+                                    serato_struct.markers[serato_struct.HighestMarker].raw = new byte[4 + item.Length + Size];
+                                    Array.Copy(serato_struct.seratoMarkersRaw, i, serato_struct.markers[serato_struct.HighestMarker].raw, 0, 4 + item.Length + Size);
+                                    serato_struct.markers[serato_struct.HighestMarker].Name = serato_struct.seratoMarkers.Substring(i + Serato_struct.TagCueLength, Size + 4 + item.Length - Serato_struct.TagCueLength);
+                                    serato_struct.markers[serato_struct.HighestMarker].Number = BitConverter.ToInt16(serato_struct.seratoMarkersRaw.Skip(i + item.Length + 1 + 4).Take(2).Reverse().ToArray(), 0);
+                                    serato_struct.markers[serato_struct.HighestMarker].Position = BitConverter.ToInt32(serato_struct.seratoMarkersRaw.Skip(i + item.Length + 1 + 4 + 2).Take(4).Reverse().ToArray(), 0);
                                     serato_struct.HighestMarker++;
-                                    i += (Size + 4+4);
+                                    i += (Size + item.Length + 4);
+                                    break;
+                                case "LOOP":
+                                    //LOOP 0 0 0 0 21 0 0 0 0  1  65 0 0 14 148 255 255 255 255 0 39 170 250 0 0 0
+                                    //LOOP 0 0 0 0 26 0 1 0 0 14 142 0 0 27 216 255 255 255 255 0 39 170 225 0 0"Loop2" 0
+                                    serato_struct.loops[serato_struct.HighestLoop].DataSize = Size;
+                                    serato_struct.loops[serato_struct.HighestLoop].raw = new byte[4 + item.Length + Size];
+                                    Array.Copy(serato_struct.seratoMarkersRaw, i, serato_struct.loops[serato_struct.HighestLoop].raw, 0, 4 + item.Length + Size);
+                                    serato_struct.loops[serato_struct.HighestLoop].Name = serato_struct.seratoMarkers.Substring(i + Serato_struct.TagLoopLength, Size + 4 + item.Length - Serato_struct.TagLoopLength);
+                                    serato_struct.loops[serato_struct.HighestLoop].Number = BitConverter.ToInt16(serato_struct.seratoMarkersRaw.Skip(i + item.Length + 1 + 4).Take(2).Reverse().ToArray(), 0);
+                                    serato_struct.loops[serato_struct.HighestLoop].PositionStart = BitConverter.ToInt32(serato_struct.seratoMarkersRaw.Skip(i + item.Length + 1 + 4 + 2).Take(4).Reverse().ToArray(), 0);
+                                    serato_struct.loops[serato_struct.HighestLoop].PositionEnd = BitConverter.ToInt32(serato_struct.seratoMarkersRaw.Skip(i + item.Length + 1 + 4 + 2 + 4).Take(4).Reverse().ToArray(), 0);
+                                    serato_struct.HighestLoop++;
+                                    i += (Size + item.Length + 4);
+                                    break;
+                                case "COLOR":
+                                    serato_struct.Color = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, 4 + item.Length + Size));
+                                    //serato_struct.loops[serato_struct.HighestLoop].DataSize = Size;
+                                    //serato_struct.loops[serato_struct.HighestLoop].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, 4 + 4 + Size));
+                                    //serato_struct.loops[serato_struct.HighestLoop].Name = serato_struct.seratoMarkers.Substring(i + 20, Size + 4 + 4 - 21);
+                                    //serato_struct.HighestLoop++;
+                                    i += (Size + item.Length + 4);
+                                    break;
+                                case "BPMLOCK":
+                                    //serato_struct.loops[serato_struct.HighestLoop].DataSize = Size;
+                                    serato_struct.BPMLock = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, 4 + item.Length + Size));
+                                    //serato_struct.loops[serato_struct.HighestLoop].Name = serato_struct.seratoMarkers.Substring(i + 20, Size + 4 + 4 - 21);
+                                    //serato_struct.HighestLoop++;
+                                    i += (Size + item.Length + 4);
                                     break;
                                 default:
                                     break;
                             }
                         }
                     }
-                    string temp =serato_struct.seratoMarkers.Substring(i);
-                    //if (serato_struct.seratoMarkers.Substring(i).StartsWith("CUE")) //We have a CUE - 21 bytes without name
-                    //{
-                    //    //4 bytes: CUE\0
-                    //    //4 bytes: length
-                    //    //1 byte: Cue number
-                    //    //4 bytes: position (what format?)
-                    //    //Position???
-                    //    //CUE 0 0 0 0 13 0 0 0 0  0   0 0 63  0  0 0 0 0
-                    //    //CUE 0 0 0 0 13 0 1 0 0  0   8 0 63 63  0 0 0 0
-                    //    //CUE 0 0 0 0 13 0 2 0 0  0 100 0  0  0 63 0 0 0
-                    //    //CUE 0 0 0 0 13 0 3 0 0  3  63 0 63 63  0 0 0 0
-                    //    //CUE 0 0 0 0 18 0 4 0 0  0   0 0  0 63  0 0 0"0 sec" 0
-                    //    //CUE 0 0 0 0 18 0 5 0 0 19  63 0 63  0 63 0 0"5 sec" 0
-                    //    nEnd = serato_struct.seratoMarkers.IndexOf("\0", i + 20); //Look if there is a name at the end
-                    //    if (nEnd == -1) break; //ToDo What to do here...
-                    //   serato_struct.markers[serato_struct.HighestMarker].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, nEnd - i));
-                    //    int nStringStart =serato_struct.seratoMarkers.LastIndexOf("\0", nEnd - 1);
-                    //   serato_struct.markers[serato_struct.HighestMarker].Name =serato_struct.seratoMarkers.Substring(nStringStart + 1, nEnd - nStringStart - 1);
-                    //   serato_struct.HighestMarker++;
-                    //    Size = BitConverter.ToInt32(Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i + 3 + 1, 4)).Reverse().ToArray(),0);
-                    //    //Int32 Size = BitConverter.ToInt32(Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i + 3 + 1 , 4).Reverse(),0,4 ),0);
-                    //    i = nEnd;
-                    //}
-                    if (serato_struct.seratoMarkers.Substring(i).StartsWith("LOOP")) //We have a LOOP - 30 bytes without name
-                    {
-                        nEnd =serato_struct.seratoMarkers.IndexOf("\0", i + 29); //Look if there is a name at the end
-                        if (nEnd == -1) break; //ToDo What to do here...
-                       serato_struct.loops[serato_struct.HighestLoop].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, nEnd - i));
-                        int nStringStart =serato_struct.seratoMarkers.LastIndexOf("\0", nEnd - 1);
-                       serato_struct.loops[serato_struct.HighestLoop].Name =serato_struct.seratoMarkers.Substring(nStringStart + 1, nEnd - nStringStart - 1);
-                       serato_struct.HighestLoop++;
-                        i = nEnd;
-                    }
-                    if (serato_struct.seratoMarkers.Substring(i).StartsWith("COLOR")) //We have a COLOR code - 14 bytes
-                    {
-                        //Byte 10: Corresponding cue number?
-                       serato_struct.Color =serato_struct.seratoMarkers.Substring(i, 14);
-                        i += 13;
-                    }
-                    if (serato_struct.seratoMarkers.Substring(i).StartsWith("BPMLOCK")) //We have a BPMLOCK - 13 - 15 bytes???
-                    {
-                       serato_struct.BPMLock =serato_struct.seratoMarkers.Substring(i, Math.Min(15,serato_struct.seratoMarkers.Length - i));
-                        i += 14;
-                    }
                 }
             }
-            if (serato_struct.seratoAutogain.Length > 0)
-            {
-                double temp = 0.0;
-                double.TryParse(serato_struct.seratoAutogain.Substring(2), System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo, out temp);
-               serato_struct.AutoGain = temp;
-            }
-
-            return bExists;
         }
+        #endregion
 
         /// <summary>
-        ///   Help function to retrieve and base64-decode field. 
+        ///   Helper function to retrieve and base64-decode field.
+        ///   Also splits description, type and data.
         /// </summary>
         /// <remarks>
         ///    Seems to fault on some base64 strings.
         /// </remarks>
-        /// <returns>A <see cref="string"/> containing the info,
-        /// stripped from type identifier and name</returns>
-        private string DecodeSeratoFlac(string FieldName)
+        /// <returns>An <see cref="int"/> containing the position in
+        /// <seealso cref="serato_struct.dataRaw"/> where the data is stored</returns>
+        private int DecodeSeratoFlac(string FieldName)
         {
             string[] seratoInput = mainForm.ogg.GetField(FieldName);
             string result = string.Empty;
             Serato_struct.SeratoRaw newTag = new Serato_struct.SeratoRaw();
-            byte[] test = new byte[0];
+            byte[] RawData = new byte[0];
             if (seratoInput[0].Length > 0)
             {
                 try
@@ -404,7 +441,7 @@ namespace TagUtil
                     for (int i = 0; i < seratoInput.Length; i++)
                     {
                         if (i == 1) { throw new System.Exception("Only first string should be filled"); }
-                        test = Convert.FromBase64String(ValidateBase64EncodedString(seratoInput[i]));
+                        RawData = Convert.FromBase64String(ValidateBase64EncodedString(seratoInput[i]));
                         //                        string full = Encoding.Default.GetString(test);
                         //                        int end_of_string = full.IndexOf("\0");
                         //                        if( end_of_string > -1)
@@ -421,13 +458,13 @@ namespace TagUtil
                     }
                     string temp = string.Empty;
                     newTag.data = new byte[0];
-                    for (int i = 0; i < test.Length; i++)
+                    for (int i = 0; i < RawData.Length; i++)
                     {
                         if (string.IsNullOrEmpty(newTag.Name))
                         {
-                            if (test[i] != '\0')
+                            if (RawData[i] != '\0')
                             {
-                                temp += ((char)test[i]).ToString();
+                                temp += ((char)RawData[i]).ToString();
                             }
                             else
                             {
@@ -440,8 +477,8 @@ namespace TagUtil
                                     else if (string.IsNullOrEmpty(newTag.Name))
                                     {
                                         newTag.Name = temp;
-                                        newTag.data = new byte[test.Length - i - 1];
-                                        Array.Copy(test, i + 1, newTag.data, 0, test.Length - i - 2); //-2, remove first and last \0
+                                        newTag.data = new byte[RawData.Length - i - 1];
+                                        Array.Copy(RawData, i + 1, newTag.data, 0, RawData.Length - i - 2); //-2, remove first and last \0
                                         break;
                                     }
                                 }
@@ -449,7 +486,7 @@ namespace TagUtil
                             }
                         }
                     }
-                   serato_struct.dataRaw.Add(newTag);
+                    serato_struct.dataRaw.Add(newTag);
                     result = result.Substring(result.IndexOf("\0", result.IndexOf("Serato")) + 1);
                 }
                 catch (Exception e)
@@ -458,9 +495,115 @@ namespace TagUtil
                 }
             }
 
-            return result;
+//            return RawData.Skip();
+            return serato_struct.dataRaw.Count-1;
         }
 
+        #region SeratoTag Read Helper Functions
+        /// <summary>
+        ///   Look for and parse ID3 tags. These are in binary format 
+        ///   with description and type already removed.
+        /// </summary>
+        /// <remarks>
+        ///    Loops through attachment frames to see if there are
+        ///    Serato tags present.
+        /// </remarks>
+        /// <returns>A <see cref="bool"/> noting if Serato tags are found</returns>
+        private bool SeratoReadID3()
+        {
+            bool FoundTag = false;
+            //Look for and parse ID3 tags. These are in binary format with description and type already removed
+            if (mainForm.id3v2 != null)
+            {
+                foreach (TagLib.Id3v2.Frame f in mainForm.id3v2.GetFrames())
+                {
+                    if (f is TagLib.Id3v2.AttachmentFrame)
+                    {
+                        TagLib.Id3v2.AttachmentFrame tagSerato = ((TagLib.Id3v2.AttachmentFrame)f);
+                        if (tagSerato.Description == "Serato Analysis")
+                        {
+                            serato_struct.seratoAnalysisRaw = new byte[tagSerato.Data.Data.Length];
+                            Array.Copy(serato_struct.seratoAnalysisRaw, tagSerato.Data.Data, tagSerato.Data.Data.Length);
+                            serato_struct.seratoAnalysis = Encoding.ASCII.GetString(tagSerato.Data.Data);
+                            FoundTag = true;
+                        }
+                        if (tagSerato.Description == "Serato Autotags")
+                        {
+                            serato_struct.seratoAutotagsRaw = new byte[tagSerato.Data.Data.Length];
+                            Array.Copy(serato_struct.seratoAutotagsRaw, tagSerato.Data.Data, tagSerato.Data.Data.Length);
+                            serato_struct.seratoAutotags = Encoding.ASCII.GetString(tagSerato.Data.Data);
+                            FoundTag = true;
+                        }
+                        if (tagSerato.Description == "Serato Autogain")
+                        {
+                            serato_struct.seratoAutogainRaw = new byte[tagSerato.Data.Data.Length];
+                            Array.Copy(serato_struct.seratoAutogainRaw, tagSerato.Data.Data, tagSerato.Data.Data.Length);
+                            serato_struct.seratoAutogain = Encoding.ASCII.GetString(tagSerato.Data.Data);
+                            FoundTag = true;
+                        }
+                        if (tagSerato.Description == "Serato BeatGrid")
+                        {
+                            serato_struct.seratoBeatgridRaw = new byte[tagSerato.Data.Data.Length];
+                            Array.Copy(serato_struct.seratoBeatgridRaw, tagSerato.Data.Data, tagSerato.Data.Data.Length);
+                            serato_struct.seratoBeatgrid = Encoding.ASCII.GetString(tagSerato.Data.Data);
+                            FoundTag = true;
+                        }
+                        if (tagSerato.Description == "Serato Markers_")
+                        {
+                            serato_struct.seratoMarkersRaw = new byte[tagSerato.Data.Data.Length];
+                            Array.Copy(serato_struct.seratoMarkersRaw, tagSerato.Data.Data, tagSerato.Data.Data.Length);
+                            serato_struct.seratoMarkers = tagSerato.Data.ToString();
+                            FoundTag = true;
+                        }
+                        if (tagSerato.Description == "Serato Markers2")
+                        {
+                            serato_struct.seratoMarkersRaw = new byte[tagSerato.Data.Data.Length];
+                            Array.Copy(serato_struct.seratoMarkersRaw, tagSerato.Data.Data, tagSerato.Data.Data.Length);
+                            serato_struct.seratoMarkers = Encoding.ASCII.GetString(tagSerato.Data.Data);
+                            FoundTag = true;
+                        }
+                        if (tagSerato.Description == "Serato Overview")
+                        {
+                            serato_struct.seratoOverviewRaw = new byte[tagSerato.Data.Data.Length];
+                            Array.Copy(serato_struct.seratoOverviewRaw, tagSerato.Data.Data, tagSerato.Data.Data.Length);
+                            serato_struct.seratoOverview = Encoding.ASCII.GetString(tagSerato.Data.Data);
+                            FoundTag = true;
+                        }
+                    }
+                }
+            }
+            return FoundTag;
+        }
+
+        /// <summary>
+        ///   Look for and parse Xiph tags. These are Base64 encoded. 
+        ///   Decode and split in description, type and data.
+        /// </summary>
+        /// <remarks>
+        ///    Loops through attachment frames to see if there are
+        ///    Serato tags present.
+        /// </remarks>
+        /// <returns>A <see cref="bool"/> noting if Serato tags are found</returns>
+        private bool SeratoReadXiph()
+        {
+            bool FoundTag = false;
+            if (mainForm.ogg != null)
+            {
+                serato_struct.seratoAnalysisRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_ANALYSIS")].data; serato_struct.seratoAnalysis = Encoding.ASCII.GetString(serato_struct.seratoAnalysisRaw);
+                serato_struct.seratoMarkersRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_MARKERS_V2")].data; serato_struct.seratoMarkers = Encoding.ASCII.GetString(serato_struct.seratoMarkersRaw);
+                serato_struct.seratoAutotagsRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_AUTOGAIN")].data; serato_struct.seratoAutotags = Encoding.ASCII.GetString(serato_struct.seratoAutotagsRaw);
+                serato_struct.seratoBeatgridRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_BEATGRID")].data; serato_struct.seratoBeatgrid = Encoding.ASCII.GetString(serato_struct.seratoBeatgridRaw);
+                serato_struct.seratoOverviewRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_OVERVIEW")].data; serato_struct.seratoOverview = Encoding.ASCII.GetString(serato_struct.seratoOverviewRaw);
+                serato_struct.seratoRelVolRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_RELVOL")].data; serato_struct.seratoRelVol = Encoding.ASCII.GetString(serato_struct.seratoRelVolRaw);
+                serato_struct.seratoVideoAssocRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_VIDEO_ASSOC")].data; serato_struct.seratoVideoAssoc = Encoding.ASCII.GetString(serato_struct.seratoVideoAssocRaw);
+                if (serato_struct.seratoOverview.Length > 0 ||
+                   serato_struct.seratoAnalysis.Length > 0 ||
+                   serato_struct.seratoMarkers.Length > 0) FoundTag = true;
+            }
+            return FoundTag;
+        }
+
+        #endregion
         #region Base64 helper functions
         /// <summary>
         ///    Normalize, verify and pad string for Base64-decoding
@@ -500,7 +643,7 @@ namespace TagUtil
             return stringToValidate;
         }
 
-        public static bool IsBase64String(string s)
+        private static bool IsBase64String(string s)
         {
             s = s.Trim();
             return (s.Length % 4 == 0) && System.Text.RegularExpressions.Regex.IsMatch(s, @"^[a-zA-Z0-9\+/]*={0,3}$", System.Text.RegularExpressions.RegexOptions.None);
