@@ -163,8 +163,9 @@ namespace TagUtil
                         tableTagUtil.Rows.Add(dr);
                         //                    set.Tables.Add(tableTagUtil);
                     }
-                    catch (TagLib.CorruptFileException)
+                    catch (CorruptFileException e) //File is probably corrupt
                     {
+                        //ToDo: Add logfile
                         String[] itemStrings = { "", "", "", "", file, "" };
                         ListViewItem item = new ListViewItem(itemStrings);
                         FileInfoView.Items.Add(item);
@@ -282,7 +283,7 @@ namespace TagUtil
                 {
                     currentFile = TagLib.File.Create(FileInfoView.FocusedItem.SubItems[4].Text);
                     ReadTags();
-                    fileInfo.UpdateInfo(FileInfoView.FocusedItem.SubItems[4].Text);
+                    fileInfo.SetInfoToForm();
                     //                fileInfo.UpdateInfo(Int32.Parse(FileInfoView.FocusedItem.SubItems[0].Text));
                 }
                 catch (TagLib.CorruptFileException)
@@ -648,7 +649,7 @@ namespace TagUtil
                 {
                     currentFile = TagLib.File.Create(FileInfoView2.FocusedItem.SubItems[4].Text);
                     ReadTags();
-                    fileInfo.UpdateInfo(FileInfoView2.FocusedItem.SubItems[4].Text);
+                    fileInfo.SetInfoToForm();
                     //                fileInfo.UpdateInfo(Int32.Parse(FileInfoView.FocusedItem.SubItems[0].Text));
                 }
                 catch (TagLib.CorruptFileException)

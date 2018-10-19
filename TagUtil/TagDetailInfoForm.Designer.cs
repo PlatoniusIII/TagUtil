@@ -76,6 +76,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.editSeratoMarkers = new System.Windows.Forms.TextBox();
             this.labelSeratoMarkers = new System.Windows.Forms.Label();
+            this.btnSave = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
             this.SuspendLayout();
             // 
@@ -465,11 +466,22 @@
             this.labelSeratoMarkers.TabIndex = 47;
             this.labelSeratoMarkers.Text = "Markers";
             // 
+            // btnSave
+            // 
+            this.btnSave.Location = new System.Drawing.Point(2, 730);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(75, 23);
+            this.btnSave.TabIndex = 49;
+            this.btnSave.Text = "Save";
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            // 
             // TagDetailInfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(508, 756);
+            this.Controls.Add(this.btnSave);
             this.Controls.Add(this.editSeratoMarkers);
             this.Controls.Add(this.labelSeratoMarkers);
             this.Controls.Add(this.label2);
@@ -577,5 +589,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox editSeratoMarkers;
         private System.Windows.Forms.Label labelSeratoMarkers;
+        private System.Windows.Forms.Button btnSave;
     }
 }

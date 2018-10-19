@@ -24,7 +24,7 @@ namespace TagUtil
         }
 
         // ID3v2 Tags Reference: http://id3.org/id3v2.4.0-frames
-        public void UpdateInfo( string file )
+        public void SetInfoToForm( )
         {
 
             TagLib.File tagFile = mainForm.currentFile; // track is the name of the mp3
@@ -160,6 +160,76 @@ namespace TagUtil
             }
 
             //TagLib.Id3v2.TextInformationFrame test = tagFile.TagTypes
+        }
+
+        public void GetInfoFromForm( )
+        {
+
+            TagLib.File tagFile = mainForm.currentFile; // track is the name of the mp3
+
+            editArtist.Text = string.Join("; ", tagFile.Tag.Performers); //tagFile.Tag.Performers[0];
+            tagFile.Tag.Title = editTitle.Text;
+            editAlbumArtist.Text = string.Join("; ", tagFile.Tag.AlbumArtists); //tagFile.Tag.AlbumArtists.Length == 0 ? "" : tagFile.Tag.AlbumArtists[0];
+            tagFile.Tag.Album = editAlbumTitle.Text;
+            editYear.Text = tagFile.Tag.Year.ToString();
+
+            editDisc.Text = tagFile.Tag.Disc == 0 ? "" : tagFile.Tag.Disc.ToString();
+            editDiscTotal.Text = tagFile.Tag.DiscCount == 0 ? "" : tagFile.Tag.DiscCount.ToString();
+
+            editGenre.Text = string.Join("; ", tagFile.Tag.Genres);
+            editBitrate.Text = tagFile.Properties.AudioBitrate.ToString();
+
+            editDuration.Text = tagFile.Properties.Duration.Hours.ToString() + ":" + tagFile.Properties.Duration.Minutes.ToString("0#") + "." + tagFile.Properties.Duration.Seconds.ToString("0#");
+
+            uint BPM = 0;
+            uint.TryParse(editBPM.Text, out BPM);
+            tagFile.Tag.BeatsPerMinute = BPM;
+
+//            editTags.Text = tagFile.TagTypesOnDisk.ToString();
+
+            tagFile.Tag.InitialKey = editKey.Text;
+            tagFile.Tag.ISRC = editISRC.Text;
+            tagFile.Tag.Publisher = editPublisher.Text;
+            tagFile.Tag.RemixedBy = editRemixer.Text;
+
+            editComment.Text = tagFile.Tag.Comment;
+            if (mainForm.id3v2 != null)
+            {
+                TagLib.Id3v2.PlayCountFrame pcf = TagLib.Id3v2.PlayCountFrame.Get(mainForm.id3v2, false);
+                editPlaycount.Text = pcf == null ? "" : pcf.ToString();
+
+                TagLib.Id3v2.TextInformationFrame trackFrame = TagLib.Id3v2.TextInformationFrame.Get(mainForm.id3v2, "TRCK", false);
+                if (trackFrame != null)
+                {
+                    if (trackFrame.Text[0].Contains("/"))
+                    {
+                        int nSlash = trackFrame.Text[0].IndexOf("/");
+                        editTrack.Text = trackFrame.Text[0].Substring(0, nSlash);
+                        editTrackTotal.Text = (trackFrame.Text[0].Length > nSlash + 1) ? trackFrame.Text[0].Substring(nSlash + 1) : "";
+                    }
+                    else
+                    {
+                        editTrack.Text = tagFile.Tag.Track == 0 ? "" : tagFile.Tag.Track.ToString();
+                        editTrackTotal.Text = tagFile.Tag.TrackCount == 0 ? "" : tagFile.Tag.TrackCount.ToString();
+                    };
+
+                    //                    editKey.Text = ReadID3V2Tag("TKEY");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TKEY", false).ToString();
+                    //                    editISRC.Text = ReadID3V2Tag("TSRC");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TSRC", false).ToString();
+                    //                    editPublisher.Text = ReadID3V2Tag("TPUB");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPUB", false).ToString();
+                    //                    editRemixer.Text = ReadID3V2Tag("TPE4");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPE4", false).ToString();
+
+                }
+            }
+
+        }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            if (mainForm.currentFile != null)
+            {
+                GetInfoFromForm();
+                mainForm.currentFile.Save();
+            }
         }
     }
 }
