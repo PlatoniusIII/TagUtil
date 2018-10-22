@@ -27,8 +27,8 @@ namespace TagUtil
 
         public TagLib.Id3v1.Tag id3v1;
         public TagLib.Id3v2.Tag id3v2;
-        //        public TagLib.Mpeg4.AppleTag apple;
-        //        public TagLib.Ape.Tag ape;
+        public TagLib.Mpeg4.AppleTag apple;
+        public TagLib.Ape.Tag ape;
         //        public TagLib.Asf.Tag asf;
         public TagLib.Ogg.XiphComment ogg;
         public TagLib.Flac.Metadata flac;
@@ -92,8 +92,8 @@ namespace TagUtil
             //currentFile = TagLib.File.Create(FileInfoView.FocusedItem.SubItems[4].Text);
             id3v1 = currentFile.GetTag(TagLib.TagTypes.Id3v1) as TagLib.Id3v1.Tag;
             id3v2 = currentFile.GetTag(TagLib.TagTypes.Id3v2) as TagLib.Id3v2.Tag;
-//            apple = currentFile.GetTag(TagLib.TagTypes.Apple) as TagLib.Mpeg4.AppleTag;
-//            ape = currentFile.GetTag(TagLib.TagTypes.Ape) as TagLib.Ape.Tag;
+            apple = currentFile.GetTag(TagLib.TagTypes.Apple) as TagLib.Mpeg4.AppleTag;
+            ape = currentFile.GetTag(TagLib.TagTypes.Ape) as TagLib.Ape.Tag;
 //            asf = currentFile.GetTag(TagLib.TagTypes.Asf) as TagLib.Asf.Tag;
             ogg = currentFile.GetTag(TagLib.TagTypes.Xiph) as TagLib.Ogg.XiphComment;
             flac = currentFile.GetTag(TagLib.TagTypes.FlacMetadata) as TagLib.Flac.Metadata;
@@ -652,7 +652,10 @@ namespace TagUtil
                     fileInfo.SetInfoToForm();
                     //                fileInfo.UpdateInfo(Int32.Parse(FileInfoView.FocusedItem.SubItems[0].Text));
                 }
-                catch (TagLib.CorruptFileException)
+                catch (CorruptFileException)
+                {
+                }
+                catch (UnsupportedFormatException)
                 {
                 }
             }

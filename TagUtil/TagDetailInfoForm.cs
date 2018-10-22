@@ -95,11 +95,11 @@ namespace TagUtil
                     string CueNames = string.Empty;
                     for (int i = 0; i < 8; i++)
                     {
-                        if (mainForm.serato.serato_struct.markers[i].Name != string.Empty)
+                        if (mainForm.serato.serato_struct.Cues[i].Name != string.Empty)
                         {
                             if (CueNames.Length > 0) CueNames += "; ";
                             else CueNames += "(";
-                            CueNames += mainForm.serato.serato_struct.markers[i].Name;
+                            CueNames += mainForm.serato.serato_struct.Cues[i].Name;
                         }
                     }
                     if( CueNames.Length > 1 ) Markers += CueNames + ")";
