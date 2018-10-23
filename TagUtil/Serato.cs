@@ -24,6 +24,38 @@ namespace TagUtil
             serato_struct = new Serato_struct();
         }
 
+        /// <summary>
+        /// Class to allow easy conversion between data and string versions
+        /// </summary>
+        public class SeratoString
+        {
+            private string SeratoStringData;
+            private byte[] SeratoRawData;
+
+            public SeratoString()
+            {
+                Init();
+            }
+
+            public void Init()
+            {
+                SeratoStringData = string.Empty;
+                SeratoRawData = new byte[0];
+            }
+
+            public string data
+            {
+                get { return SeratoStringData; }
+                set { SeratoStringData = value; SeratoRawData = Encoding.Default.GetBytes(SeratoStringData); }
+            }
+
+            public byte[] raw
+            {
+                get { return SeratoRawData; }
+                set { SeratoRawData = value; SeratoStringData = Encoding.Default.GetString(SeratoRawData); }
+            }
+        }
+
         #region Struct containing all Serato related data
         /// <summary>
         ///   Class containing all Serato related information. 
@@ -35,7 +67,7 @@ namespace TagUtil
             /// <summary>
             ///   Possible tags in a Marker tag. 
             /// </summary>
-            public string[] MarkerTags = { "CUE", "LOOP", "FLIP", "COLOR", "BPMLOCK" };
+            public string[] MarkerTags = { "CUE\0", "LOOP\0", "FLIP\0", "COLOR\0", "BPMLOCK\0" };
             /// <summary>
             ///   Default length of a Cue tag (without name).
             /// </summary>
@@ -48,6 +80,12 @@ namespace TagUtil
             ///   Default starting position of flip name.
             /// </summary>
             public const int TagFlipNamePosition = 29;
+            /// <summary>
+            ///   Some defines to make positions clearer to read.
+            /// </summary>
+            public const int TagSizeLength = 4;
+            public const int TagNumberLength = 2;
+            public const int TagEndOfSectionLength = 1;
 
             /// <summary>
             /// Struct that contains the data split in description, type and data
@@ -64,7 +102,7 @@ namespace TagUtil
             /// </summary>
             /// <remarks>It seems that for the Position, a second is
             /// divided into 1000 points</remarks>
-            public struct CueMarkers
+            public class CueMarkers
             {
                 public void Init()
                 {
@@ -83,7 +121,7 @@ namespace TagUtil
             /// <summary>
             /// Struct that contains all Loop data
             /// </summary>
-            public struct LoopMarkers
+            public class LoopMarkers
             {
                 public void Init()
                 {
@@ -101,36 +139,42 @@ namespace TagUtil
                 public int Number { set; get; }
             }
 
-            public struct FlipParts
-            {
-                public int PositionStart { set; get; }
-                public int PositionEnd { set; get; }
-            }
 
             /// <summary>
             /// Struct that contains all Flip data
             /// </summary>
             /// <remarks>Probably just a bunch of start and end markers</remarks>
-            public struct FlipMarkers
+            public class FlipMarkers
             {
+
+                public struct FlipParts
+                {
+                    public int Size { set; get; }
+                    public int PositionStart { set; get; }
+                    public int PositionEnd { set; get; }
+                }
 
                 public void Init()
                 {
                     Name = string.Empty;
                     DataSize = -1;
                     Number = -1;
+                    NumberOfFlips = -1;
+                    flipParts.Clear();
                 }
                 public string Name { set; get; }
                 public byte[] raw { set; get; }
                 public int DataSize { set; get; }
                 public int Number { set; get; }
-//                public List<FlipParts> flipParts = new List<FlipParts>();
+                public int NumberOfFlips { set; get; }
+                public List<FlipParts> flipParts = new List<FlipParts>();
             }
 
             public void Init()
             {
-                seratoAnalysis = string.Empty;
-                seratoAnalysisRaw = new byte[0];
+                seratoAnalysis.Init();
+//                seratoAnalysis = string.Empty;
+//                seratoAnalysisRaw = new byte[0];
                 seratoAutogain = string.Empty;
                 seratoAutogainRaw = new byte[0];
                 seratoAutotags = string.Empty;
@@ -161,19 +205,33 @@ namespace TagUtil
 
                 for (int i = 0; i < Cues.Length; i++)
                 {
-                    Cues[i].Init();
+                    if (Cues[i] is null)
+                        Cues[i] = new CueMarkers();
+                    else
+                        Cues[i].Init();
                 }
                 for (int i = 0; i < loops.Length; i++)
                 {
-                    loops[i].Init();
+                    if (loops[i] is null)
+                        loops[i] = new LoopMarkers();
+                    else
+                        loops[i].Init();
+                }
+                for (int i = 0; i < flips.Length; i++)
+                {
+                    if (flips[i] is null)
+                        flips[i] = new FlipMarkers();
+                    else
+                        flips[i].Init();
                 }
             }
 
             /// <summary>
             /// For now keep all data in both binary and string format
             /// </summary>
-            public string seratoAnalysis { set; get; }
-            public byte[] seratoAnalysisRaw { set; get; }
+            public SeratoString seratoAnalysis = new SeratoString();
+//            public string seratoAnalysis { set; get; }
+//            public byte[] seratoAnalysisRaw { set; get; }
             public string seratoAutogain { set; get; }
             public byte[] seratoAutogainRaw { set; get; }
             public string seratoAutotags { set; get; }
@@ -391,7 +449,7 @@ namespace TagUtil
         ///   Parse the Serato Markers V2 tag
         /// </summary>
         /// <remarks>
-        ///    The Markers V2 tag contains cue points, loops,
+        ///    The Markers V2 tag contains cue points, loops, flips,
         ///    color tags and a BPMLOCK tag.
         /// </remarks>
         private void ParseSeratoMarkersV2Tag()
@@ -428,10 +486,10 @@ namespace TagUtil
                     {
                         if (serato_struct.seratoMarkersV2.Substring(i).StartsWith(item))
                         {
-                            Size = BitConverter.ToInt32(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + 1).Take(4).Reverse().ToArray(), 0);
+                            Size = BitConverter.ToInt32(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length).Take(4).Reverse().ToArray(), 0);
                             switch (item)
                             {
-                                case "CUE":
+                                case "CUE\0":
                                     //4 bytes: 'CUE\0'
                                     //4 bytes: length of data part
                                     //2 bytes: cue number
@@ -449,13 +507,14 @@ namespace TagUtil
                                     //serato_struct.markers[serato_struct.HighestMarker].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, 4+4+Size));
                                     serato_struct.Cues[serato_struct.HighestMarker].raw = new byte[4 + item.Length + Size];
                                     Array.Copy(serato_struct.seratoMarkersV2Raw, i, serato_struct.Cues[serato_struct.HighestMarker].raw, 0, 4 + item.Length + Size);
-                                    serato_struct.Cues[serato_struct.HighestMarker].Name = serato_struct.seratoMarkersV2.Substring(i + Serato_struct.TagCueLength, Size + 4 + item.Length - Serato_struct.TagCueLength);
-                                    serato_struct.Cues[serato_struct.HighestMarker].Number = BitConverter.ToInt16(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + 1 + 4).Take(2).Reverse().ToArray(), 0);
-                                    serato_struct.Cues[serato_struct.HighestMarker].Position = BitConverter.ToInt32(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + 1 + 4 + 2).Take(4).Reverse().ToArray(), 0);
+                                    int StartOfName = serato_struct.seratoMarkersV2.LastIndexOf("\0", i + item.Length + Serato_struct.TagSizeLength + Size);
+                                    serato_struct.Cues[serato_struct.HighestMarker].Name = serato_struct.seratoMarkersV2.Substring(StartOfName, (i + item.Length + Serato_struct.TagSizeLength + Size) - StartOfName);
+                                    serato_struct.Cues[serato_struct.HighestMarker].Number = BitConverter.ToInt16(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + Serato_struct.TagSizeLength).Take(2).Reverse().ToArray(), 0);
+                                    serato_struct.Cues[serato_struct.HighestMarker].Position = BitConverter.ToInt32(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + Serato_struct.TagSizeLength + Serato_struct.TagNumberLength).Take(4).Reverse().ToArray(), 0);
                                     serato_struct.HighestMarker++;
-                                    i += (Size + item.Length + 4);
+//                                    i += (Size + item.Length + 4);
                                     break;
-                                case "LOOP":
+                                case "LOOP\0":
                                     //LOOP 0 0 0 0 21 0 0 0 0  1  65 0 0 14 148 255 255 255 255 0 39 170 250 0 0 0
                                     //LOOP 0 0 0 0 26 0 1 0 0 14 142 0 0 27 216 255 255 255 255 0 39 170 225 0 0"Loop2" 0
                                     //
@@ -464,14 +523,15 @@ namespace TagUtil
                                     serato_struct.loops[serato_struct.HighestLoop].DataSize = Size;
                                     serato_struct.loops[serato_struct.HighestLoop].raw = new byte[4 + item.Length + Size];
                                     Array.Copy(serato_struct.seratoMarkersV2Raw, i, serato_struct.loops[serato_struct.HighestLoop].raw, 0, 4 + item.Length + Size);
+                                    StartOfName = serato_struct.seratoMarkersV2.LastIndexOf("\0", i + item.Length + Serato_struct.TagSizeLength + Size);
                                     serato_struct.loops[serato_struct.HighestLoop].Name = serato_struct.seratoMarkersV2.Substring(i + Serato_struct.TagLoopLength, Size + 4 + item.Length - Serato_struct.TagLoopLength);
-                                    serato_struct.loops[serato_struct.HighestLoop].Number = BitConverter.ToInt16(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + 1 + 4).Take(2).Reverse().ToArray(), 0);
-                                    serato_struct.loops[serato_struct.HighestLoop].PositionStart = BitConverter.ToInt32(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + 1 + 4 + 2).Take(4).Reverse().ToArray(), 0);
-                                    serato_struct.loops[serato_struct.HighestLoop].PositionEnd = BitConverter.ToInt32(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + 1 + 4 + 2 + 4).Take(4).Reverse().ToArray(), 0);
+                                    serato_struct.loops[serato_struct.HighestLoop].Number = BitConverter.ToInt16(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + 4).Take(2).Reverse().ToArray(), 0);
+                                    serato_struct.loops[serato_struct.HighestLoop].PositionStart = BitConverter.ToInt32(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + Serato_struct.TagSizeLength + Serato_struct.TagNumberLength).Take(4).Reverse().ToArray(), 0);
+                                    serato_struct.loops[serato_struct.HighestLoop].PositionEnd = BitConverter.ToInt32(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + Serato_struct.TagSizeLength + Serato_struct.TagNumberLength + 4).Take(4).Reverse().ToArray(), 0);
                                     serato_struct.HighestLoop++;
-                                    i += (Size + item.Length + 4);
+//                                    i += (Size + item.Length + 4);
                                     break;
-                                case "FLIP":
+                                case "FLIP\0":
                                     //FLIP    length      Number   Name              ?? # of parts? Would be 23 parts of 21 bytes
                                     //               497                             488 left       483 left (= 23*21)
                                     //FLIP 00 00-00-01-F1 00-00 00 46-6C-69-70-31-00 01 00-00-00-17 00 00-00-00-10 40-46-66-BB-41-47-D5-1C-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-35-14-D6-6C-1F-54-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-2F-23-18-3A-4A-D4-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-29-BC-F7-F8-75-63-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-20-D2-5A-AD-B6-A3-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-1D-D9-7B-94-CC-63-3F-D9-BA-5E-35-3F-7D-00-00-00-00-00-10-3F-F2-B1-2F-D4-16-1F-6C-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-3D-FF-73-B6-DE-14-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-20-D2-5A-AD-B6-A3-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-23-CB-39-C6-A0-E3-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-1D-D9-7B-94-CC-63-3F-D9-BA-5E-35-3F-7D-00-00-00-00-00-10-3F-F1-93-DC-2A-BE-48-2C-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-2C-2A-39-21-60-94-40-57-33-53-F7-CE-D9-17-00-00-00-00-10-40-57-99-DE-08-AA-6A-CC-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-46-EA-11-01-9C-D4-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-14-63-40-5A-0E-94-40-57-33-53-F7-CE-D9-17-00-00-00-00-10-40-57-76-33-93-7F-6F-C5-40-5A-66-87-2B-02-0C-4A-00-00-00-00-10-40-5A-8A-31-A0-2D-07-34-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-35-14-D6-6C-1F-54-40-57-33-53-F7-CE-D9-17-00-00-00-00-10-40-57-56-FE-6C-F9-D4-1F-40-60-66-7E-F9-DB-22-D1-00-00-00-00-10-40-60-91-97-9C-C4-63-D1-40-63-99-B2-2D-0E-56-04-00-00-00-00-10-40-63-AA-C9-2F-DD-97-84-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-46-81-97-55-6F-8C-BA-40-46-66-BB-41-47-D5"
@@ -533,30 +593,32 @@ namespace TagUtil
                                     serato_struct.flips[serato_struct.HighestFlip].DataSize = Size;
                                     serato_struct.flips[serato_struct.HighestFlip].raw = new byte[4 + item.Length + Size];
                                     Array.Copy(serato_struct.seratoMarkersV2Raw, i, serato_struct.flips[serato_struct.HighestFlip].raw, 0, 4 + item.Length + Size);
-                                    int EndOfName = serato_struct.seratoMarkersV2.IndexOf("\0", i + item.Length + 1 + 4 + 3);
-                                    serato_struct.flips[serato_struct.HighestFlip].Name = serato_struct.seratoMarkersV2.Substring(i + item.Length + 1 + 4 + 3, EndOfName - (i + item.Length + 1 + 4 + 3));
-                                    serato_struct.flips[serato_struct.HighestFlip].Number = BitConverter.ToInt16(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + 1 + 4).Take(2).Reverse().ToArray(), 0);
+                                    int EndOfName = serato_struct.seratoMarkersV2.IndexOf("\0", i + item.Length + 1 + Serato_struct.TagSizeLength + 3);
+                                    serato_struct.flips[serato_struct.HighestFlip].Number = BitConverter.ToInt16(serato_struct.seratoMarkersV2Raw.Skip(i + (item.Length + Serato_struct.TagEndOfSectionLength) + Serato_struct.TagSizeLength).Take(2).Reverse().ToArray(), 0);
+                                    serato_struct.flips[serato_struct.HighestFlip].Name = serato_struct.seratoMarkersV2.Substring(i + item.Length + Serato_struct.TagSizeLength + 3, EndOfName - (i + item.Length + Serato_struct.TagSizeLength + 3));
+                                    serato_struct.flips[serato_struct.HighestFlip].NumberOfFlips = BitConverter.ToInt16(serato_struct.seratoMarkersV2Raw.Skip(i + item.Length + Serato_struct.TagSizeLength + Serato_struct.TagNumberLength + 1 + (serato_struct.flips[serato_struct.HighestFlip].Name.Length + 1) + 1).Take(4).Reverse().ToArray(), 0);
                                     serato_struct.HighestFlip++;
-                                    i += (Size + item.Length + 4);
+//                                    i += (Size + item.Length + 4);
                                     break;
-                                case "COLOR":
+                                case "COLOR\0":
                                     serato_struct.Color = Encoding.ASCII.GetBytes(serato_struct.seratoMarkersV2.Substring(i, 4 + item.Length + Size));
                                     //serato_struct.loops[serato_struct.HighestLoop].DataSize = Size;
                                     //serato_struct.loops[serato_struct.HighestLoop].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, 4 + 4 + Size));
                                     //serato_struct.loops[serato_struct.HighestLoop].Name = serato_struct.seratoMarkers.Substring(i + 20, Size + 4 + 4 - 21);
                                     //serato_struct.HighestLoop++;
-                                    i += (Size + item.Length + 4);
+//                                    i += (Size + item.Length + Serato_struct.TagSizeLength - 1);
                                     break;
-                                case "BPMLOCK":
+                                case "BPMLOCK\0":
                                     //serato_struct.loops[serato_struct.HighestLoop].DataSize = Size;
                                     serato_struct.BPMLock = Encoding.ASCII.GetBytes(serato_struct.seratoMarkersV2.Substring(i, 4 + item.Length + Size));
                                     //serato_struct.loops[serato_struct.HighestLoop].Name = serato_struct.seratoMarkers.Substring(i + 20, Size + 4 + 4 - 21);
                                     //serato_struct.HighestLoop++;
-                                    i += (Size + item.Length + 4);
+//                                    i += (Size + item.Length + 4 - 1);
                                     break;
                                 default:
                                     break;
                             }
+                            i += (Size + item.Length + Serato_struct.TagSizeLength - 1);
                         }
                     }
                 }
@@ -601,9 +663,9 @@ namespace TagUtil
                         TagLib.Id3v2.AttachmentFrame tagSerato = ((TagLib.Id3v2.AttachmentFrame)f);
                         if (tagSerato.Description == "Serato Analysis")
                         {
-                            serato_struct.seratoAnalysisRaw = new byte[tagSerato.Data.Data.Length];
-                            Array.Copy(serato_struct.seratoAnalysisRaw, tagSerato.Data.Data, tagSerato.Data.Data.Length);
-                            serato_struct.seratoAnalysis = Encoding.ASCII.GetString(tagSerato.Data.Data);
+                            serato_struct.seratoAnalysis.raw = new byte[tagSerato.Data.Data.Length];
+                            Array.Copy(serato_struct.seratoAnalysis.raw, tagSerato.Data.Data, tagSerato.Data.Data.Length);
+                            serato_struct.seratoAnalysis.data = Encoding.ASCII.GetString(tagSerato.Data.Data);
                             FoundTag = true;
                         }
                         if (tagSerato.Description == "Serato Autotags")
@@ -668,16 +730,16 @@ namespace TagUtil
             bool FoundTag = false;
             if (mainForm.ogg != null)
             {
-                serato_struct.seratoAnalysisRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_ANALYSIS")].data; serato_struct.seratoAnalysis = Encoding.ASCII.GetString(serato_struct.seratoAnalysisRaw);
+                serato_struct.seratoAnalysis.raw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_ANALYSIS")].data; serato_struct.seratoAnalysis.data = Encoding.ASCII.GetString(serato_struct.seratoAnalysis.raw);
                 serato_struct.seratoMarkersV2Raw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_MARKERS_V2")].data; serato_struct.seratoMarkersV2 = Encoding.ASCII.GetString(serato_struct.seratoMarkersV2Raw);
                 serato_struct.seratoAutotagsRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_AUTOGAIN")].data; serato_struct.seratoAutotags = Encoding.ASCII.GetString(serato_struct.seratoAutotagsRaw);
                 serato_struct.seratoBeatgridRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_BEATGRID")].data; serato_struct.seratoBeatgrid = Encoding.ASCII.GetString(serato_struct.seratoBeatgridRaw);
                 serato_struct.seratoOverviewRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_OVERVIEW")].data; serato_struct.seratoOverview = Encoding.ASCII.GetString(serato_struct.seratoOverviewRaw);
                 serato_struct.seratoRelVolRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_RELVOL")].data; serato_struct.seratoRelVol = Encoding.ASCII.GetString(serato_struct.seratoRelVolRaw);
                 serato_struct.seratoVideoAssocRaw = serato_struct.dataRaw[DecodeSeratoFlac("SERATO_VIDEO_ASSOC")].data; serato_struct.seratoVideoAssoc = Encoding.ASCII.GetString(serato_struct.seratoVideoAssocRaw);
-                if (serato_struct.seratoOverview.Length > 0 ||
-                   serato_struct.seratoAnalysis.Length > 0 ||
-                   serato_struct.seratoMarkersV2.Length > 0) FoundTag = true;
+                if (!string.IsNullOrEmpty(serato_struct.seratoOverview) ||
+                   !string.IsNullOrEmpty(serato_struct.seratoAnalysis.data) ||
+                   !string.IsNullOrEmpty(serato_struct.seratoMarkersV2 ) ) FoundTag = true;
             }
             return FoundTag;
         }
@@ -726,18 +788,18 @@ namespace TagUtil
                     serato_struct.seratoMarkersV2 = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001markersv2");
                 serato_struct.seratoMarkersV2Raw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoMarkersV2)].data; serato_struct.seratoMarkersV2 = Encoding.ASCII.GetString(serato_struct.seratoMarkersV2Raw);
 
-                serato_struct.seratoAutogain = mainForm.apple.GetDashBox("com.serato.dj", "autgain");
+                serato_struct.seratoAutogain = mainForm.apple.GetDashBox("com.serato.dj", "autogain");
                 if (string.IsNullOrEmpty(serato_struct.seratoAutogain))
-                    serato_struct.seratoAutogain = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001autgain");
+                    serato_struct.seratoAutogain = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001autogain");
                 serato_struct.seratoAutogainRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoAutogain)].data; serato_struct.seratoAutogain = Encoding.ASCII.GetString(serato_struct.seratoAutogainRaw);
                 //                DecodeSeratoApple(serato_struct.seratoMarkers);
 
-                serato_struct.seratoAnalysis = mainForm.apple.GetDashBox("com.serato.dj", "analysisVersion");
-                if (string.IsNullOrEmpty(serato_struct.seratoAnalysis))
-                    serato_struct.seratoAnalysis = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001analysisVersion");
-                if (!string.IsNullOrEmpty(serato_struct.seratoAnalysis))
+                serato_struct.seratoAnalysis.data = mainForm.apple.GetDashBox("com.serato.dj", "analysisVersion");
+                if (string.IsNullOrEmpty(serato_struct.seratoAnalysis.data))
+                    serato_struct.seratoAnalysis.data = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001analysisVersion");
+                if (!string.IsNullOrEmpty(serato_struct.seratoAnalysis.data))
                 {
-                    serato_struct.seratoAnalysisRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoAnalysis)].data; serato_struct.seratoAnalysis = Encoding.ASCII.GetString(serato_struct.seratoAnalysisRaw);
+                    serato_struct.seratoAnalysis.raw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoAnalysis.data)].data;// serato_struct.seratoAnalysis = Encoding.ASCII.GetString(serato_struct.seratoAnalysis.raw);
                 }
                 //                DecodeSeratoApple(serato_struct.seratoMarkers);
 

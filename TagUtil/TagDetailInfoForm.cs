@@ -83,16 +83,16 @@ namespace TagUtil
 
             if( mainForm.serato.ContainsSeratoData() )
             {
-                if (mainForm.serato.serato_struct.seratoAnalysisRaw.Length > 0)
+                if (mainForm.serato.serato_struct.seratoAnalysis.raw.Length > 0)
                 {
                     //ToDo: Is able to get here when raw data is just zeroes
                     editSeratoAnalysis.Text = "Analyser version: ";
-                    for (int i = 0; i < mainForm.serato.serato_struct.seratoAnalysisRaw.Length; i++)
+                    for (int i = 0; i < mainForm.serato.serato_struct.seratoAnalysis.raw.Length; i++)
                     {
-                        if (mainForm.serato.serato_struct.seratoAnalysisRaw[i] > 0)
+                        if (mainForm.serato.serato_struct.seratoAnalysis.raw[i] > 0)
                         {
                             if (i > 0) editSeratoAnalysis.Text += ".";
-                            editSeratoAnalysis.Text += mainForm.serato.serato_struct.seratoAnalysisRaw[i].ToString();
+                            editSeratoAnalysis.Text += mainForm.serato.serato_struct.seratoAnalysis.raw[i].ToString();
 
                         }
                     }
