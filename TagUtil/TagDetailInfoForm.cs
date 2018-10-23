@@ -83,7 +83,22 @@ namespace TagUtil
 
             if( mainForm.serato.ContainsSeratoData() )
             {
-                editSeratoAnalysis.Text = BitConverter.ToString(Encoding.Default.GetBytes(mainForm.serato.serato_struct.seratoAnalysis));
+                if (mainForm.serato.serato_struct.seratoAnalysisRaw.Length > 0)
+                {
+                    //ToDo: Is able to get here when raw data is just zeroes
+                    editSeratoAnalysis.Text = "Analyser version: ";
+                    for (int i = 0; i < mainForm.serato.serato_struct.seratoAnalysisRaw.Length; i++)
+                    {
+                        if (mainForm.serato.serato_struct.seratoAnalysisRaw[i] > 0)
+                        {
+                            if (i > 0) editSeratoAnalysis.Text += ".";
+                            editSeratoAnalysis.Text += mainForm.serato.serato_struct.seratoAnalysisRaw[i].ToString();
+
+                        }
+                    }
+                }
+                else editSeratoAnalysis.Text = "Field not available";
+
                 if (mainForm.serato.serato_struct.seratoAutotags.Length > 0)
                     editSeratoAutotags.Text = "BPM: " + mainForm.serato.serato_struct.BPM + " - tag2: " + mainForm.serato.serato_struct.tag2 + " - tag3: " + mainForm.serato.serato_struct.tag3;
                 else
@@ -212,11 +227,6 @@ namespace TagUtil
                         editTrack.Text = tagFile.Tag.Track == 0 ? "" : tagFile.Tag.Track.ToString();
                         editTrackTotal.Text = tagFile.Tag.TrackCount == 0 ? "" : tagFile.Tag.TrackCount.ToString();
                     };
-
-                    //                    editKey.Text = ReadID3V2Tag("TKEY");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TKEY", false).ToString();
-                    //                    editISRC.Text = ReadID3V2Tag("TSRC");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TSRC", false).ToString();
-                    //                    editPublisher.Text = ReadID3V2Tag("TPUB");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPUB", false).ToString();
-                    //                    editRemixer.Text = ReadID3V2Tag("TPE4");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPE4", false).ToString();
 
                 }
             }

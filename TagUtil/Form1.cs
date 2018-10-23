@@ -137,7 +137,6 @@ namespace TagUtil
 
             FileInfoView.Items.Clear();
 
-            //ToDo: Check if directory exists
             if (Directory.Exists(editCurrentDirectory.Text))
             {
                 foreach (string file in Directory.EnumerateFiles(editCurrentDirectory.Text, "*.*", SearchOption.AllDirectories)
@@ -163,7 +162,7 @@ namespace TagUtil
                         tableTagUtil.Rows.Add(dr);
                         //                    set.Tables.Add(tableTagUtil);
                     }
-                    catch (CorruptFileException e) //File is probably corrupt
+                    catch (CorruptFileException) //File is probably corrupt
                     {
                         //ToDo: Add logfile
                         String[] itemStrings = { "", "", "", "", file, "" };
