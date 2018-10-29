@@ -77,6 +77,8 @@
             this.editSeratoMarkers = new System.Windows.Forms.TextBox();
             this.labelSeratoMarkers = new System.Windows.Forms.Label();
             this.btnSave = new System.Windows.Forms.Button();
+            this.editSeratoBPMLock = new System.Windows.Forms.TextBox();
+            this.labelSeratoBPMLock = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
             this.SuspendLayout();
             // 
@@ -422,7 +424,7 @@
             // 
             this.editSeratoAnalysis.Location = new System.Drawing.Point(81, 388);
             this.editSeratoAnalysis.Name = "editSeratoAnalysis";
-            this.editSeratoAnalysis.Size = new System.Drawing.Size(414, 20);
+            this.editSeratoAnalysis.Size = new System.Drawing.Size(62, 20);
             this.editSeratoAnalysis.TabIndex = 43;
             // 
             // editSeratoAutotags
@@ -476,11 +478,29 @@
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
+            // editSeratoBPMLock
+            // 
+            this.editSeratoBPMLock.Location = new System.Drawing.Point(257, 388);
+            this.editSeratoBPMLock.Name = "editSeratoBPMLock";
+            this.editSeratoBPMLock.Size = new System.Drawing.Size(62, 20);
+            this.editSeratoBPMLock.TabIndex = 51;
+            // 
+            // labelSeratoBPMLock
+            // 
+            this.labelSeratoBPMLock.AutoSize = true;
+            this.labelSeratoBPMLock.Location = new System.Drawing.Point(189, 391);
+            this.labelSeratoBPMLock.Name = "labelSeratoBPMLock";
+            this.labelSeratoBPMLock.Size = new System.Drawing.Size(57, 13);
+            this.labelSeratoBPMLock.TabIndex = 50;
+            this.labelSeratoBPMLock.Text = "BPM Lock";
+            // 
             // TagDetailInfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(508, 756);
+            this.Controls.Add(this.editSeratoBPMLock);
+            this.Controls.Add(this.labelSeratoBPMLock);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.editSeratoMarkers);
             this.Controls.Add(this.labelSeratoMarkers);
@@ -590,5 +610,7 @@
         private System.Windows.Forms.TextBox editSeratoMarkers;
         private System.Windows.Forms.Label labelSeratoMarkers;
         private System.Windows.Forms.Button btnSave;
+        private System.Windows.Forms.TextBox editSeratoBPMLock;
+        private System.Windows.Forms.Label labelSeratoBPMLock;
     }
 }

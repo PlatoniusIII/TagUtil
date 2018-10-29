@@ -44,7 +44,7 @@ namespace TagUtil
         public const int offsetNumber = 4;
         public const int offsetPosition1 = 6;
         public const int offsetPosition2 = 10;
-        public const int offsetCueColor = 10;
+        public const int offsetCueColor = 9; //Probably 9, not 10
         public const int offsetLoopColor = 14;
 
         public Serato(MainForm parent)
@@ -218,6 +218,8 @@ namespace TagUtil
                 HighestLoop = 0;
                 HighestFlip = 0;
 
+                TrackColor = Color.Black;
+
                 dataRaw.Clear();
 
                 for (int i = 0; i < Cues.Length; i++)
@@ -277,7 +279,9 @@ namespace TagUtil
             public FlipMarkers[] flips = new FlipMarkers[6];
             public int HighestFlip { set; get; }
             public byte[] ColorTag { set; get; }
-            public byte[] BPMLock { set; get; }
+            public Color TrackColor { set; get; }
+            public byte[] BPMLockRaw { set; get; }
+            public int BPMLock { set; get; }
             public double AutoGain { set; get; }
             public List<SeratoRaw> dataRaw = new List<SeratoRaw>();
         }
@@ -434,7 +438,7 @@ namespace TagUtil
         /// </remarks>
         private void ParseSeratoAutotagsTag()
         {
-            if (serato_struct.seratoAutotags.Length > 0)
+            if (!string.IsNullOrEmpty(serato_struct.seratoAutotags))
             {
                 double temp;
                 string[] words = serato_struct.seratoAutotags.Substring(2).Split('\0');
@@ -455,7 +459,7 @@ namespace TagUtil
         /// </remarks>
         private void ParseSeratoAutogainTag()
         {
-            if (serato_struct.seratoAutogain.Length > 0)
+            if (!string.IsNullOrEmpty(serato_struct.seratoAutogain))
             {
                 double temp = 0.0;
                 double.TryParse(serato_struct.seratoAutogain.Substring(2), System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo, out temp);
@@ -532,7 +536,7 @@ namespace TagUtil
                                     serato_struct.Cues[serato_struct.HighestMarker].Name = serato_struct.seratoMarkersV2.data.Substring(StartOfName, (i + item.Length + TagSizeLength + Size- 1) - StartOfName);
                                     serato_struct.Cues[serato_struct.HighestMarker].Number = BitConverter.ToInt16(serato_struct.seratoMarkersV2.raw.Skip(i + item.Length + offsetNumber).Take(2).Reverse().ToArray(), 0);
                                     serato_struct.Cues[serato_struct.HighestMarker].Position = BitConverter.ToInt32(serato_struct.seratoMarkersV2.raw.Skip(i + item.Length + offsetPosition1).Take(4).Reverse().ToArray(), 0);
-                                    serato_struct.Cues[serato_struct.HighestMarker].color = Color.FromArgb(serato_struct.seratoMarkersV2.raw[i + item.Length + offsetCueColor], serato_struct.seratoMarkersV2.raw[i + item.Length + offsetCueColor + 1], serato_struct.seratoMarkersV2.raw[i + item.Length + offsetCueColor + 2]);
+                                    serato_struct.Cues[serato_struct.HighestMarker].color = Color.FromArgb(serato_struct.seratoMarkersV2.raw[i + item.Length + offsetCueColor], serato_struct.seratoMarkersV2.raw[i + item.Length + offsetCueColor + 1], serato_struct.seratoMarkersV2.raw[i + item.Length + offsetCueColor + 2], serato_struct.seratoMarkersV2.raw[i + item.Length + offsetCueColor + 3]);
                                     serato_struct.HighestMarker++;
 //                                    i += (Size + item.Length + 4);
                                     break;
@@ -558,7 +562,6 @@ namespace TagUtil
                                     //FLIP    length      Number   Name              ?? # of parts? Would be 23 parts of 21 bytes
                                     //               497                             488 left       483 left (= 23*21)
                                     //FLIP 00 00-00-01-F1 00-00 00 46-6C-69-70-31-00 01 00-00-00-17 00 00-00-00-10 40-46-66-BB-41-47-D5-1C-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-35-14-D6-6C-1F-54-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-2F-23-18-3A-4A-D4-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-29-BC-F7-F8-75-63-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-20-D2-5A-AD-B6-A3-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-1D-D9-7B-94-CC-63-3F-D9-BA-5E-35-3F-7D-00-00-00-00-00-10-3F-F2-B1-2F-D4-16-1F-6C-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-3D-FF-73-B6-DE-14-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-20-D2-5A-AD-B6-A3-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-23-CB-39-C6-A0-E3-40-54-00-20-C4-9B-A5-E3-00-00-00-00-10-40-54-1D-D9-7B-94-CC-63-3F-D9-BA-5E-35-3F-7D-00-00-00-00-00-10-3F-F1-93-DC-2A-BE-48-2C-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-2C-2A-39-21-60-94-40-57-33-53-F7-CE-D9-17-00-00-00-00-10-40-57-99-DE-08-AA-6A-CC-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-46-EA-11-01-9C-D4-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-14-63-40-5A-0E-94-40-57-33-53-F7-CE-D9-17-00-00-00-00-10-40-57-76-33-93-7F-6F-C5-40-5A-66-87-2B-02-0C-4A-00-00-00-00-10-40-5A-8A-31-A0-2D-07-34-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-45-35-14-D6-6C-1F-54-40-57-33-53-F7-CE-D9-17-00-00-00-00-10-40-57-56-FE-6C-F9-D4-1F-40-60-66-7E-F9-DB-22-D1-00-00-00-00-10-40-60-91-97-9C-C4-63-D1-40-63-99-B2-2D-0E-56-04-00-00-00-00-10-40-63-AA-C9-2F-DD-97-84-40-44-CD-0E-56-04-18-94-00-00-00-00-10-40-46-81-97-55-6F-8C-BA-40-46-66-BB-41-47-D5"
-                                    //1040 = 4160, ut's unlikely that all my positions and lengths are similar so what's here...
                                     //10 could be the size, as there are basically 16 bytes after it till the end, apart from the last one?
                                     //00 00-00-00-10 40-46-66-BB-41-47-D5-1C-40-44-CD-0E-56-04-18-94-
                                     //00 00-00-00-10 40-45-35-14-D6-6C-1F-54-40-44-CD-0E-56-04-18-94-
@@ -587,32 +590,34 @@ namespace TagUtil
                                     //FLIP    length      Number   Name              ?? # of parts? Would be 26 parts of 21 bytes
                                     //               560                             551 left       546 left (= 26*21)
                                     //FLIP 00 00-00-02-30 00-00 01 46-6C-69-70-31-00 01 00-00-00-1A 00-00-00-00-10-40-0D-78-35-AF-3D-B0-79-40-14-00-00-00-00-00-00-00-00-00-00-10-40-17-B7-16-DF-24-D0-02-40-14-00-00-00-00-00-00-00-00-00-00-10-40-16-B1-8A-2E-94-4A-00-40-72-C0-00-00-00-00-00-00-00-00-00-10-40-72-CA-07-F0-F4-15-C0-40-72-C0-00-00-00-00-00-00-00-00-00-10-40-72-C6-AF-F5-F8-0E-80-40-72-C0-00-00-00-00-00-00-00-00-00-10-40-72-C7-0F-11-DB-2B-C0-40-72-C0-00-00-00-00-00-00-00-00-00-10-40-72-C8-2C-65-84-83-80-40-14-00-00-00-00-00-00-00-00-00-00-10-40-17-9F-4F-E6-5D-7E-02-40-14-00-00-00-00-00-00-00-00-00-00-10-40-16-99-C3-35-CC-F8-00-40-72-C0-00-00-00-00-00-00-00-00-00-10-40-72-CB-25-44-9D-6D-80-40-72-C0-00-00-00-00-00-00-00-00-00-10-40-72-C7-CD-49-A1-66-40-40-72-C0-00-00-00-00-00-00-00-00-00-10-40-72-C7-CD-49-A1-66-40-40-72-C0-00-00-00-00-00-00-00-00-00-10-40-72-C7-6E-2D-BE-49-00-40-14-00-00-00-00-00-00-00-00-00-00-10-40-17-B7-16-DF-24-D0-02-40-14-00-00-00-00-00-00-00-00-00-00-10-40-16-B1-8A-2E-94-4A-00-00-00-00-00-00-00-00-00-00-00-00-00-10-3F-D0-58-CB-09-08-55-EA-40-14-00-00-00-00-00-00-00-00-00-00-10-40-16-0B-19-61-21-0C-00-00-00-00-00-00-00-00-00-00-00-00-00-10-3F-D0-58-CB-09-08-55-EA-40-14-00-00-00-00-00-00-00-00-00-00-10-40-15-35-1A-A2-1F-2A-00-00-00-00-00-00-00-00-00-00-00-00-00-10-3F-D9-43-68-53-C7-10-AB-40-14-00-00-00-00-00-00-00-00-00-00-10-40-15-35-1A-A2-1F-2A-00-00-00-00-00-00-00-00-00-00-00-00-00-10-40-0C-96-9B-F9-1B-BA-B2-40-14-00-00-00-00-00-00-00-00-00-00-10-40-17-CE-DD-D7-EC-22-06-40-14-00-00-00-00-00-00-00-00-00-00-10-40-17-57-FA-FC-07-88-01-40-72-C0-00-00-00-00-00-00-00-00-00-10-40-72-CE-1E-23-B6-57-80-40-72-C0-00-00-00-00-00-00-00-00-00-10-40-72-D9-0F-1E-67-0B-EC-40-0D-78-35-AF-3D-B0"
-                                    //00-00-00-00-10-40-0D-78-35-AF-3D-B0-79-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-17-B7-16-DF-24-D0-02-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-16-B1-8A-2E-94-4A-00-40-72-C0-00-00-00-00-00-
-                                    //00-00-00-00-10-40-72-CA-07-F0-F4-15-C0-40-72-C0-00-00-00-00-00-
-                                    //00-00-00-00-10-40-72-C6-AF-F5-F8-0E-80-40-72-C0-00-00-00-00-00-
-                                    //00-00-00-00-10-40-72-C7-0F-11-DB-2B-C0-40-72-C0-00-00-00-00-00-
-                                    //00-00-00-00-10-40-72-C8-2C-65-84-83-80-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-17-9F-4F-E6-5D-7E-02-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-16-99-C3-35-CC-F8-00-40-72-C0-00-00-00-00-00-
-                                    //00-00-00-00-10-40-72-CB-25-44-9D-6D-80-40-72-C0-00-00-00-00-00-
-                                    //00-00-00-00-10-40-72-C7-CD-49-A1-66-40-40-72-C0-00-00-00-00-00-
-                                    //00-00-00-00-10-40-72-C7-CD-49-A1-66-40-40-72-C0-00-00-00-00-00-
-                                    //00-00-00-00-10-40-72-C7-6E-2D-BE-49-00-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-17-B7-16-DF-24-D0-02-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-16-B1-8A-2E-94-4A-00-00-00-00-00-00-00-00-00-
-                                    //00-00-00-00-10-3F-D0-58-CB-09-08-55-EA-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-16-0B-19-61-21-0C-00-00-00-00-00-00-00-00-00-
-                                    //00-00-00-00-10-3F-D0-58-CB-09-08-55-EA-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-15-35-1A-A2-1F-2A-00-00-00-00-00-00-00-00-00-
-                                    //00-00-00-00-10-3F-D9-43-68-53-C7-10-AB-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-15-35-1A-A2-1F-2A-00-00-00-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-0C-96-9B-F9-1B-BA-B2-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-17-CE-DD-D7-EC-22-06-40-14-00-00-00-00-00-00-
-                                    //00-00-00-00-10-40-17-57-FA-FC-07-88-01-40-72-C0-00-00-00-00-00-
-                                    //00-00-00-00-10-40-72-CE-1E-23-B6-57-80-40-72-C0-00-00-00-00-00-
-                                    //00-00-00-00-10-40-72-D9-0F-1E-67-0B-EC-40-0D-78-35-AF-3D-B0 - probably lacks a \0?
+                                    //00-00-00-00-10 40-0D-78-35-AF-3D-B0-79-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-17-B7-16-DF-24-D0-02-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-16-B1-8A-2E-94-4A-00-40-72-C0-00-00-00-00-00-
+                                    //00-00-00-00-10 40-72-CA-07-F0-F4-15-C0-40-72-C0-00-00-00-00-00-
+                                    //00-00-00-00-10 40-72-C6-AF-F5-F8-0E-80-40-72-C0-00-00-00-00-00-
+                                    //00-00-00-00-10 40-72-C7-0F-11-DB-2B-C0-40-72-C0-00-00-00-00-00-
+                                    //00-00-00-00-10 40-72-C8-2C-65-84-83-80-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-17-9F-4F-E6-5D-7E-02-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-16-99-C3-35-CC-F8-00-40-72-C0-00-00-00-00-00-
+                                    //00-00-00-00-10 40-72-CB-25-44-9D-6D-80-40-72-C0-00-00-00-00-00-
+                                    //00-00-00-00-10 40-72-C7-CD-49-A1-66-40-40-72-C0-00-00-00-00-00-
+                                    //00-00-00-00-10 40-72-C7-CD-49-A1-66-40-40-72-C0-00-00-00-00-00-
+                                    //00-00-00-00-10 40-72-C7-6E-2D-BE-49-00-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-17-B7-16-DF-24-D0-02-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-16-B1-8A-2E-94-4A-00-00-00-00-00-00-00-00-00-
+                                    //00-00-00-00-10 3F-D0-58-CB-09-08-55-EA-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-16-0B-19-61-21-0C-00-00-00-00-00-00-00-00-00-
+                                    //00-00-00-00-10 3F-D0-58-CB-09-08-55-EA-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-15-35-1A-A2-1F-2A-00-00-00-00-00-00-00-00-00-
+                                    //00-00-00-00-10 3F-D9-43-68-53-C7-10-AB-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-15-35-1A-A2-1F-2A-00-00-00-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-0C-96-9B-F9-1B-BA-B2-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-17-CE-DD-D7-EC-22-06-40-14-00-00-00-00-00-00-
+                                    //00-00-00-00-10 40-17-57-FA-FC-07-88-01-40-72-C0-00-00-00-00-00-
+                                    //00-00-00-00-10 40-72-CE-1E-23-B6-57-80-40-72-C0-00-00-00-00-00-
+                                    //00-00-00-00-10 40-72-D9-0F-1E-67-0B-EC-40-0D-78-35-AF-3D-B0 - probably lacks a \0?
+                                    //As the data starts with '40' or '3F' it doesn't look like a position or offset. 9th value is again '40' or '00'.
+                                    //You'd expect to have something like a start position and a play length in there...
                                     serato_struct.flips[serato_struct.HighestFlip].DataSize = Size;
                                     serato_struct.flips[serato_struct.HighestFlip].raw = new byte[4 + item.Length + Size];
                                     Array.Copy(serato_struct.seratoMarkersV2.raw, i, serato_struct.flips[serato_struct.HighestFlip].raw, 0, 4 + item.Length + Size);
@@ -634,19 +639,23 @@ namespace TagUtil
 //                                    i += (Size + item.Length + 4);
                                     break;
                                 case "COLOR\0":
+                                    //Serato has the option to give tracks a color
+                                    //Size + color, seemingly as alpha R G B
                                     serato_struct.ColorTag = Encoding.ASCII.GetBytes(serato_struct.seratoMarkersV2.data.Substring(i, 4 + item.Length + Size));
-                                    //serato_struct.loops[serato_struct.HighestLoop].DataSize = Size;
-                                    //serato_struct.loops[serato_struct.HighestLoop].raw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkers.Substring(i, 4 + 4 + Size));
-                                    //serato_struct.loops[serato_struct.HighestLoop].Name = serato_struct.seratoMarkers.Substring(i + 20, Size + 4 + 4 - 21);
-                                    //serato_struct.HighestLoop++;
+
+                                    serato_struct.TrackColor = Color.FromArgb(
+                                        serato_struct.seratoMarkersV2.raw[i + item.Length + TagSizeLength], 
+                                        serato_struct.seratoMarkersV2.raw[i + item.Length + TagSizeLength + 1], 
+                                        serato_struct.seratoMarkersV2.raw[i + item.Length + TagSizeLength + 2],
+                                        serato_struct.seratoMarkersV2.raw[i + item.Length + TagSizeLength + 3]);
 //                                    i += (Size + item.Length + Serato_struct.TagSizeLength - 1);
                                     break;
                                 case "BPMLOCK\0":
                                     //Seem to be 3 bytes, all set to 1. Would that have anything to do with key lock/tempo lock?
                                     //serato_struct.loops[serato_struct.HighestLoop].DataSize = Size;
-                                    serato_struct.BPMLock = Encoding.ASCII.GetBytes(serato_struct.seratoMarkersV2.data.Substring(i, 4 + item.Length + Size));
-                                    //serato_struct.loops[serato_struct.HighestLoop].Name = serato_struct.seratoMarkers.Substring(i + 20, Size + 4 + 4 - 21);
-                                    //serato_struct.HighestLoop++;
+                                    serato_struct.BPMLockRaw = Encoding.ASCII.GetBytes(serato_struct.seratoMarkersV2.data.Substring(i, 4 + item.Length + Size));
+                                    //Seems to be a single byte
+                                    serato_struct.BPMLock = serato_struct.seratoMarkersV2.raw[i + item.Length + TagSizeLength];
 //                                    i += (Size + item.Length + 4 - 1);
                                     break;
                                 default:
@@ -815,17 +824,30 @@ namespace TagUtil
                 serato_struct.seratoMarkers = mainForm.apple.GetDashBox("com.serato.dj", "markers");
                 if (string.IsNullOrEmpty(serato_struct.seratoMarkers))
                     serato_struct.seratoMarkers = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001markers");
-                serato_struct.seratoMarkersRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoMarkers)].data; serato_struct.seratoMarkers = Encoding.ASCII.GetString(serato_struct.seratoMarkersRaw);
+                if (!string.IsNullOrEmpty(serato_struct.seratoMarkers))
+                {
+                    serato_struct.seratoMarkersRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoMarkers)].data; serato_struct.seratoMarkers = Encoding.ASCII.GetString(serato_struct.seratoMarkersRaw);
+                    FoundTag = true;
+                }
 
                 serato_struct.seratoMarkersV2.data = mainForm.apple.GetDashBox("com.serato.dj", "markersv2");
                 if (string.IsNullOrEmpty(serato_struct.seratoMarkersV2.data))
                     serato_struct.seratoMarkersV2.data = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001markersv2");
-                serato_struct.seratoMarkersV2.raw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoMarkersV2.data)].data; //serato_struct.seratoMarkersV2 = Encoding.ASCII.GetString(serato_struct.seratoMarkersV2Raw);
+                if (!string.IsNullOrEmpty(serato_struct.seratoMarkersV2.data))
+                {
+                    serato_struct.seratoMarkersV2.raw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoMarkersV2.data)].data; //serato_struct.seratoMarkersV2 = Encoding.ASCII.GetString(serato_struct.seratoMarkersV2Raw);
+                    FoundTag = true;
+                }
+
 
                 serato_struct.seratoAutogain = mainForm.apple.GetDashBox("com.serato.dj", "autogain");
                 if (string.IsNullOrEmpty(serato_struct.seratoAutogain))
                     serato_struct.seratoAutogain = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001autogain");
-                serato_struct.seratoAutogainRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoAutogain)].data; serato_struct.seratoAutogain = Encoding.ASCII.GetString(serato_struct.seratoAutogainRaw);
+                if (!string.IsNullOrEmpty(serato_struct.seratoAutogain))
+                {
+                    serato_struct.seratoAutogainRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoAutogain)].data; serato_struct.seratoAutogain = Encoding.ASCII.GetString(serato_struct.seratoAutogainRaw);
+                    FoundTag = true;
+                }
                 //                DecodeSeratoApple(serato_struct.seratoMarkers);
 
                 serato_struct.seratoAnalysis.data = mainForm.apple.GetDashBox("com.serato.dj", "analysisVersion");
@@ -834,6 +856,7 @@ namespace TagUtil
                 if (!string.IsNullOrEmpty(serato_struct.seratoAnalysis.data))
                 {
                     serato_struct.seratoAnalysis.raw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoAnalysis.data)].data;// serato_struct.seratoAnalysis = Encoding.ASCII.GetString(serato_struct.seratoAnalysis.raw);
+                    FoundTag = true;
                 }
                 //                DecodeSeratoApple(serato_struct.seratoMarkers);
 
@@ -843,25 +866,38 @@ namespace TagUtil
                 if (!string.IsNullOrEmpty(serato_struct.seratoBeatgrid))
                 {
                     serato_struct.seratoBeatgridRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoBeatgrid)].data; serato_struct.seratoBeatgrid = Encoding.ASCII.GetString(serato_struct.seratoBeatgridRaw);
+                    FoundTag = true;
                 }
                 //                DecodeSeratoApple(serato_struct.seratoMarkers);
 
                 serato_struct.seratoOverview = mainForm.apple.GetDashBox("com.serato.dj", "overview");
                 if (string.IsNullOrEmpty(serato_struct.seratoOverview))
                     serato_struct.seratoOverview = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001overview");
-                serato_struct.seratoOverviewRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoOverview)].data; serato_struct.seratoOverview = Encoding.ASCII.GetString(serato_struct.seratoOverviewRaw);
+                if (!string.IsNullOrEmpty(serato_struct.seratoOverview))
+                {
+                    serato_struct.seratoOverviewRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoOverview)].data; serato_struct.seratoOverview = Encoding.ASCII.GetString(serato_struct.seratoOverviewRaw);
+                    FoundTag = true;
+                }
                 //                DecodeSeratoApple(serato_struct.seratoMarkers);
 
                 serato_struct.seratoRelVol = mainForm.apple.GetDashBox("com.serato.dj", "relvol");
                 if (string.IsNullOrEmpty(serato_struct.seratoRelVol))
                     serato_struct.seratoRelVol = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001relvol");
-                serato_struct.seratoRelVolRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoRelVol)].data; serato_struct.seratoRelVol = Encoding.ASCII.GetString(serato_struct.seratoRelVolRaw);
+                if (!string.IsNullOrEmpty(serato_struct.seratoRelVol))
+                {
+                    serato_struct.seratoRelVolRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoRelVol)].data; serato_struct.seratoRelVol = Encoding.ASCII.GetString(serato_struct.seratoRelVolRaw);
+                    FoundTag = true;
+                }
                 //                DecodeSeratoApple(serato_struct.seratoMarkers);
 
                 serato_struct.seratoVideoAssoc = mainForm.apple.GetDashBox("com.serato.dj", "videoassociation");
                 if (string.IsNullOrEmpty(serato_struct.seratoVideoAssoc))
                     serato_struct.seratoVideoAssoc = mainForm.apple.GetDashBox("\u0001com.serato.dj", "\u0001videoassociation");
-                serato_struct.seratoVideoAssocRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoVideoAssoc)].data; serato_struct.seratoVideoAssoc = Encoding.ASCII.GetString(serato_struct.seratoVideoAssocRaw);
+                if (!string.IsNullOrEmpty(serato_struct.seratoVideoAssoc))
+                {
+                    serato_struct.seratoVideoAssocRaw = serato_struct.dataRaw[DecodeSeratoApple(serato_struct.seratoVideoAssoc)].data; serato_struct.seratoVideoAssoc = Encoding.ASCII.GetString(serato_struct.seratoVideoAssocRaw);
+                    FoundTag = true;
+                }
                 //                DecodeSeratoApple(serato_struct.seratoMarkers);
 
                 //While Serato writes raw data, MixedInKey writes JSON structures.

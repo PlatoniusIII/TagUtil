@@ -86,7 +86,7 @@ namespace TagUtil
                 if (mainForm.serato.serato_struct.seratoAnalysis.raw.Length > 0)
                 {
                     //ToDo: Is able to get here when raw data is just zeroes
-                    editSeratoAnalysis.Text = "Analyser version: ";
+                    editSeratoAnalysis.Text = string.Empty;
                     for (int i = 0; i < mainForm.serato.serato_struct.seratoAnalysis.raw.Length; i++)
                     {
                         if (mainForm.serato.serato_struct.seratoAnalysis.raw[i] > 0)
@@ -141,6 +141,7 @@ namespace TagUtil
 
                 }
                 editSeratoMarkers.Text = Markers;
+                editSeratoBPMLock.Text = mainForm.serato.serato_struct.BPMLock == 0 ? "Off" : "On";
             }
             else
             {

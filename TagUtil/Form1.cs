@@ -173,7 +173,7 @@ namespace TagUtil
                         dr["Title"] = "";
                         dr["Album"] = "";
                         dr["Year"] = 0;
-                        dr["File"] = "";
+                        dr["File"] = file;
                         dr["Bitrate"] = 0;
                         tableTagUtil.Rows.Add(dr);
                         //                    set.Tables.Add(tableTagUtil);
@@ -266,6 +266,7 @@ namespace TagUtil
 
         private void button1_Click(object sender, EventArgs e)
         {
+            appSettings.TagUtilSettings.directoryRenameScheme = editDirectoryRenameScheme.Text;
             string newDirectory = ParseString();
         }
 
@@ -316,9 +317,9 @@ namespace TagUtil
             else
                 return string.Empty;
 
-            for (int nChar = 0; nChar < appSettings.TagUtilSettings.directoryRenameScheme.Length; nChar++)
+            for (int nChar = 0; nChar < editDirectoryRenameScheme.Text.Length; nChar++)
             {
-                if (appSettings.TagUtilSettings.directoryRenameScheme[nChar] == '%')
+                if (editDirectoryRenameScheme.Text[nChar] == '%')
                 {
                     if (bPlaceholderActive)
                     {
@@ -335,9 +336,9 @@ namespace TagUtil
                 {
 
                     if (bPlaceholderActive)
-                        placeHolder += appSettings.TagUtilSettings.directoryRenameScheme[nChar];
+                        placeHolder += editDirectoryRenameScheme.Text[nChar];
                     else
-                        newDirectory += appSettings.TagUtilSettings.directoryRenameScheme[nChar];
+                        newDirectory += editDirectoryRenameScheme.Text[nChar];
                 }
             }
             labelResultingString.Text = newDirectory;
@@ -380,6 +381,7 @@ namespace TagUtil
             switch (placeHolder)
             {
                 case "isrc": newData = (currentFile.Tag.ISRC.IndexOf(',') >= 0) ? currentFile.Tag.ISRC.Substring(0, currentFile.Tag.ISRC.IndexOf(',')): currentFile.Tag.ISRC; break;
+                case "isrc_no_spaces": newData = ((currentFile.Tag.ISRC.IndexOf(',') >= 0) ? currentFile.Tag.ISRC.Substring(0, currentFile.Tag.ISRC.IndexOf(',')): currentFile.Tag.ISRC).Replace(" ",""); break;
                 case "albumartist": newData = currentFile.Tag.AlbumArtists[0]; break;
                 case "album": newData = currentFile.Tag.Album; break;
                 case "year": newData = currentFile.Tag.Year.ToString(); break;
@@ -580,7 +582,8 @@ namespace TagUtil
             }
             if (bCorruptFiles) { if (verdict.Length > 0) verdict += "+"; verdict += "CORRUPT"; }
             if (bVariousBitrates) { if (verdict.Length > 0) verdict += "+"; verdict += "VARIOUS BITRATES"; }
-            if (bFlac && !bCBR && !bCBR) { verdict += " - FLAC"; }
+            if (bFlac && !bMP3 && !bCBR && !bVBR) { verdict += " - FLAC"; }
+            if (bFlac && (bMP3 || bCBR || bVBR)) { verdict += " - Lossless & Lossy"; }
             if (!bFlac && bMP3 && !bVBR && !bVariousBitrates) { verdict += " - " + GetBitrateTypeString(typeBitrate); } //Just use the last one
             if (!bFlac && !bMP3 && bVBR && !bVariousBitrates) { verdict += " - VBR"; }
             if (!bFlac && bMP3 && bVBR) { verdict += " - VBR+CBR"; }
