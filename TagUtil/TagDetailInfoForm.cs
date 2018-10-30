@@ -80,8 +80,13 @@ namespace TagUtil
 
                 }
             }
+            else
+            {
+                editTrack.Text = tagFile.Tag.Track.ToString();
+                editTrackTotal.Text = tagFile.Tag.TrackCount.ToString();
+            }
 
-            if( mainForm.serato.ContainsSeratoData() )
+            if ( mainForm.serato.ContainsSeratoData() )
             {
                 if (mainForm.serato.serato_struct.seratoAnalysis.raw.Length > 0)
                 {
@@ -99,7 +104,7 @@ namespace TagUtil
                 }
                 else editSeratoAnalysis.Text = "Field not available";
 
-                if (mainForm.serato.serato_struct.seratoAutotags.Length > 0)
+                if (!string.IsNullOrEmpty(mainForm.serato.serato_struct.seratoAutotags.data))
                     editSeratoAutotags.Text = "BPM: " + mainForm.serato.serato_struct.BPM + " - tag2: " + mainForm.serato.serato_struct.tag2 + " - tag3: " + mainForm.serato.serato_struct.tag3;
                 else
                     editSeratoAutotags.Text = "Field not available";
