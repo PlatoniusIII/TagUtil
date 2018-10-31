@@ -1,13 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.IO;
-using System.Collections;
-using System.Text;
-using System.Security.Cryptography;
-using System.Diagnostics;
 using TagLib;
 
 /// <summary>Whole idea:
@@ -23,25 +20,28 @@ namespace TagUtil
     {
         //        public string directoryRenameScheme = "..\\%isrc% %albumartist% - %album% - %year% (%bitratetype%)";
         public TagLib.File currentFile = null;
-        TagDetailInfoForm fileInfo;
+
+        private TagDetailInfoForm fileInfo;
 
         public TagLib.Id3v1.Tag id3v1;
         public TagLib.Id3v2.Tag id3v2;
         public TagLib.Mpeg4.AppleTag apple;
         public TagLib.Ape.Tag ape;
+
         //        public TagLib.Asf.Tag asf;
         public TagLib.Ogg.XiphComment ogg;
+
         public TagLib.Flac.Metadata flac;
         public ByteVector Serato_Autotags_Identifier_ID3 = new ByteVector("Serato Autotags");
         public ByteVector Serato_BeatGrid_Identifier_ID3 = new ByteVector("Serato BeatGrid");
         public ByteVector Serato_Autotags_Identifier = new ByteVector("SERATO_ANALYSIS");
         public ByteVector Serato_BeatGrid_Identifier = new ByteVector("SERATO_BEATGRID");
         public ByteVector LAME_Identifier = new ByteVector("LAME");
-        string[] extensions = { ".mp3", ".wma", ".mp4", ".wav", ".flac", ".m4a" };
+        private string[] extensions = { ".mp3", ".wma", ".mp4", ".wav", ".flac", ".m4a" };
 
         public Serato serato;
 
-        enum BitrateType
+        private enum BitrateType
         {
             bitrate_NONE,
             bitrate_FLAC,
@@ -54,12 +54,13 @@ namespace TagUtil
             bitrate_LOW,
             bitrate_VBR
         }
+
         private int sortColumn = -1;
 
-        string QualityRating = "";
-//        public List<TagInfo> fileTags = new List<TagInfo>();
+        private string QualityRating = "";
+        //        public List<TagInfo> fileTags = new List<TagInfo>();
 
-        XMLsetting.AppSettings appSettings;
+        private XMLsetting.AppSettings appSettings;
 
         public MainForm()
         {
@@ -94,7 +95,7 @@ namespace TagUtil
             id3v2 = currentFile.GetTag(TagLib.TagTypes.Id3v2) as TagLib.Id3v2.Tag;
             apple = currentFile.GetTag(TagLib.TagTypes.Apple) as TagLib.Mpeg4.AppleTag;
             ape = currentFile.GetTag(TagLib.TagTypes.Ape) as TagLib.Ape.Tag;
-//            asf = currentFile.GetTag(TagLib.TagTypes.Asf) as TagLib.Asf.Tag;
+            //            asf = currentFile.GetTag(TagLib.TagTypes.Asf) as TagLib.Asf.Tag;
             ogg = currentFile.GetTag(TagLib.TagTypes.Xiph) as TagLib.Ogg.XiphComment;
             flac = currentFile.GetTag(TagLib.TagTypes.FlacMetadata) as TagLib.Flac.Metadata;
         }
@@ -115,7 +116,7 @@ namespace TagUtil
             DataSet set = new DataSet("setTagUtil");
             DataTable tableTagUtil = new DataTable("TagUtil");
             set.Tables.Add(tableTagUtil);
-            tableTagUtil.Columns.Add(new DataColumn("Artist",typeof(string)));
+            tableTagUtil.Columns.Add(new DataColumn("Artist", typeof(string)));
             tableTagUtil.Columns.Add(new DataColumn("Title", typeof(string)));
             tableTagUtil.Columns.Add(new DataColumn("Album", typeof(string)));
             tableTagUtil.Columns.Add(new DataColumn("Year", typeof(int)));
@@ -133,7 +134,7 @@ namespace TagUtil
             //set.Tables.Add(tableFile);
             //set.Tables.Add(tableBitrate);
 
-//            fileTags.Clear(); //Delete current list of tags
+            //            fileTags.Clear(); //Delete current list of tags
 
             FileInfoView.Items.Clear();
 
@@ -180,22 +181,22 @@ namespace TagUtil
                     }
                 }
             }
-/*            foreach (TagInfo tag in fileTags)
-            {
-                String[] itemStrings = { tag.ID.ToString(), tag.Artist, tag.Title, tag.Album, tag.Year.ToString(), tag.file, tag.Bitrate.ToString() };
-                ListViewItem item = new ListViewItem(itemStrings);
-                FileInfoView.Items.Add(item);
-            }
-*/
-//            this.FileInfoView2.DataSource = new BindingSource(set, "tagUtil");
-//            this.FileInfoView2.DataSource = set.Tables["tagUtil"];
-//            this.FileInfoView2.DataSource = new DataView(set.Tables["tagUtil"]);
-//            this.FileInfoView2.DataMember = "tagUtil"; this.FileInfoView2.DataSource = set;
-            this.FileInfoView2.DataMember = "TagUtil";
-            this.FileInfoView2.DataSource = new DataViewManager(set);
-            this.FileInfoView2.Sort(4);
-            this.FileInfoView2.ShowGroups = false;
-            this.FileInfoView2.AutoResizeColumns();
+            /*            foreach (TagInfo tag in fileTags)
+                        {
+                            String[] itemStrings = { tag.ID.ToString(), tag.Artist, tag.Title, tag.Album, tag.Year.ToString(), tag.file, tag.Bitrate.ToString() };
+                            ListViewItem item = new ListViewItem(itemStrings);
+                            FileInfoView.Items.Add(item);
+                        }
+            */
+            //            this.FileInfoView2.DataSource = new BindingSource(set, "tagUtil");
+            //            this.FileInfoView2.DataSource = set.Tables["tagUtil"];
+            //            this.FileInfoView2.DataSource = new DataView(set.Tables["tagUtil"]);
+            //            this.FileInfoView2.DataMember = "tagUtil"; this.FileInfoView2.DataSource = set;
+            FileInfoView2.DataMember = "TagUtil";
+            FileInfoView2.DataSource = new DataViewManager(set);
+            FileInfoView2.Sort(4);
+            FileInfoView2.ShowGroups = false;
+            FileInfoView2.AutoResizeColumns();
             return true;
         }
 
@@ -224,7 +225,6 @@ namespace TagUtil
 
             if (id3v2 != null)
             {
-
                 TagLib.Id3v2.TextInformationFrame trackFrame = TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TRCK", false);
                 if (trackFrame != null)
                 {
@@ -244,15 +244,14 @@ namespace TagUtil
                     currentTag.ISRC = ReadID3V2Tag("TSRC");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TSRC", false).ToString();
                     currentTag.Publisher = ReadID3V2Tag("TPUB");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPUB", false).ToString();
                     currentTag.RemixedBy = ReadID3V2Tag("TPE4");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPE4", false).ToString();
-
                 }
             }
 
-//            ContainsSeratoData(currentTag);
+            //            ContainsSeratoData(currentTag);
             IsVBR();
 
-//            currentTag.ID = fileTags.Count();
-//            fileTags.Add(currentTag);
+            //            currentTag.ID = fileTags.Count();
+            //            fileTags.Add(currentTag);
         }
 
         private string ReadID3V2Tag(string tag)
@@ -272,7 +271,6 @@ namespace TagUtil
 
         private void FileInfoView_ShowInfo(object sender, EventArgs e)
         {
-
         }
 
         private void FileInfoView_ShowSelection(object sender, ListViewItemSelectionChangedEventArgs e)
@@ -334,7 +332,6 @@ namespace TagUtil
                 }
                 else
                 {
-
                     if (bPlaceholderActive)
                         placeHolder += editDirectoryRenameScheme.Text[nChar];
                     else
@@ -372,7 +369,7 @@ namespace TagUtil
         /// </remarks>
         /// <seealso cref="ParseString"/>
         /// <param name="placeHolder">Placeholder string that needs to be replaced</param>
-        /// <returns>This function returns a <see cref="string"/> that contains either the 
+        /// <returns>This function returns a <see cref="string"/> that contains either the
         /// value from the current file or a result based on info, like the bitrate type</returns>
         private string replacePlaceholder(string placeHolder)
         {
@@ -380,8 +377,8 @@ namespace TagUtil
 
             switch (placeHolder)
             {
-                case "isrc": newData = (currentFile.Tag.ISRC.IndexOf(',') >= 0) ? currentFile.Tag.ISRC.Substring(0, currentFile.Tag.ISRC.IndexOf(',')): currentFile.Tag.ISRC; break;
-                case "isrc_no_spaces": newData = ((currentFile.Tag.ISRC.IndexOf(',') >= 0) ? currentFile.Tag.ISRC.Substring(0, currentFile.Tag.ISRC.IndexOf(',')): currentFile.Tag.ISRC).Replace(" ",""); break;
+                case "isrc": newData = (currentFile.Tag.ISRC.IndexOf(',') >= 0) ? currentFile.Tag.ISRC.Substring(0, currentFile.Tag.ISRC.IndexOf(',')) : currentFile.Tag.ISRC; break;
+                case "isrc_no_spaces": newData = ((currentFile.Tag.ISRC.IndexOf(',') >= 0) ? currentFile.Tag.ISRC.Substring(0, currentFile.Tag.ISRC.IndexOf(',')) : currentFile.Tag.ISRC).Replace(" ", ""); break;
                 case "albumartist": newData = currentFile.Tag.AlbumArtists[0]; break;
                 case "album": newData = currentFile.Tag.Album; break;
                 case "year": newData = currentFile.Tag.Year.ToString(); break;
@@ -392,12 +389,11 @@ namespace TagUtil
                 default: break;
             }
 
-
             return newData;
         }
 
         /// <summary>
-        ///    Gets a bitrate type enumeration. 
+        ///    Gets a bitrate type enumeration.
         /// </summary>
         /// <value>
         ///    A <see cref="BitrateType" /> containing filetype or bitrate.
@@ -407,7 +403,7 @@ namespace TagUtil
         /// </remarks>
         /// <seealso cref="BitrateType"/>
         /// <completionlist cref="BitrateType"/>
-        /// <returns>This function returns a <see cref="BitrateType"/> that contains either the 
+        /// <returns>This function returns a <see cref="BitrateType"/> that contains either the
         /// type of file, or (for MP3) either the bitrate or if it's VBR</returns>
         private BitrateType GetBitrateType()
         {
@@ -418,7 +414,7 @@ namespace TagUtil
             if (currentFile.MimeType == "taglib/mp3")
             {
                 if (IsVBR())
-                    typeBitrate = BitrateType.bitrate_VBR; 
+                    typeBitrate = BitrateType.bitrate_VBR;
                 else
                 {
                     switch (currentFile.Properties.AudioBitrate)
@@ -428,7 +424,8 @@ namespace TagUtil
                         case 192: typeBitrate = BitrateType.bitrate_192; break;
                         case 160: typeBitrate = BitrateType.bitrate_160; break;
                         case 128: typeBitrate = BitrateType.bitrate_128; break;
-                        default: if( currentFile.Properties.AudioBitrate < 128 ) typeBitrate = BitrateType.bitrate_LOW; 
+                        default:
+                            if (currentFile.Properties.AudioBitrate < 128) typeBitrate = BitrateType.bitrate_LOW;
                             else typeBitrate = BitrateType.bitrate_NONE;
                             break;
                     }
@@ -437,12 +434,12 @@ namespace TagUtil
             return typeBitrate;
         }
 
-        private string GetBitrateTypeString( BitrateType type = BitrateType.bitrate_NONE )
+        private string GetBitrateTypeString(BitrateType type = BitrateType.bitrate_NONE)
         {
             /// <summary>Returns string version of bitrate type enum
             /// </summary>
             string bitrateTypeString = string.Empty;
-            if( type == BitrateType.bitrate_NONE ) type = GetBitrateType();
+            if (type == BitrateType.bitrate_NONE) type = GetBitrateType();
             switch (type)
             {
                 case BitrateType.bitrate_NONE: bitrateTypeString = "-"; break;
@@ -499,14 +496,14 @@ namespace TagUtil
                     if (QualityPresent)
                     {
                         //Header offset + 8 (XING + flags) + Frames, Bytes and TOC if available
-                        currentFile.Seek(XingHeader + 8 + 4 * (FramesPresent ? 1 : 0 )+ 4 * (BytesPresent ? 1 : 0) + 100 * (TOCPresent ? 1 : 0));
+                        currentFile.Seek(XingHeader + 8 + 4 * (FramesPresent ? 1 : 0) + 4 * (BytesPresent ? 1 : 0) + 100 * (TOCPresent ? 1 : 0));
                         ByteVector Quality_data = currentFile.ReadBlock(4);
                         int VBRQuality = BitConverter.ToInt32(Quality_data.ToArray().Reverse().ToArray(), 0);
                         bVBR = true;
                     }
 
-//                    if (xing_header.Present)
-//                        return false;
+                    //                    if (xing_header.Present)
+                    //                        return false;
                     //                    var vector = new TagLib.ByteVector();
                     //                    TagLib.ByteVector xing = header.;
                     /* CODE HERE */
@@ -561,7 +558,7 @@ namespace TagUtil
                     currentFile = TagLib.File.Create(file);
                     typeBitrate = GetBitrateType();
                     if (typeBitrate == BitrateType.bitrate_FLAC) bFlac = true;
-                        //Flac is currently the last none-mp3 type listed
+                    //Flac is currently the last none-mp3 type listed
                     else if (typeBitrate > BitrateType.bitrate_MP3)
                     {
                         bMP3 = true;
@@ -635,7 +632,7 @@ namespace TagUtil
             FileInfoView.Sort();
             // Set the ListViewItemSorter property to a new ListViewItemComparer
             // object.
-            this.FileInfoView.ListViewItemSorter = new ListViewItemComparer(e.Column, FileInfoView.Sorting);
+            FileInfoView.ListViewItemSorter = new ListViewItemComparer(e.Column, FileInfoView.Sorting);
         }
 
         private void formMain_Shown(object sender, EventArgs e)
@@ -661,24 +658,26 @@ namespace TagUtil
                 {
                 }
             }
-
         }
     }
 
-    class ListViewItemComparer : IComparer
+    internal class ListViewItemComparer : IComparer
     {
-        private int col;
-        private SortOrder order;
+        private readonly int col;
+        private readonly SortOrder order;
+
         public ListViewItemComparer()
         {
             col = 0;
             order = SortOrder.Ascending;
         }
+
         public ListViewItemComparer(int column, SortOrder order)
         {
             col = column;
             this.order = order;
         }
+
         public int Compare(object x, object y)
         {
             int returnVal = -1;
@@ -691,5 +690,4 @@ namespace TagUtil
             return returnVal;
         }
     }
-
 }

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Drawing;
-using System.Windows.Forms;
 using System.IO;
-using System.Text;
+using System.Windows.Forms;
 
 namespace TagUtil
 {
     public partial class TagDetailInfoForm : Form
     {
-        MainForm mainForm;
+        private MainForm mainForm;
 
-        public TagDetailInfoForm( MainForm parent )
+        public TagDetailInfoForm(MainForm parent)
         {
             mainForm = parent;
             InitializeComponent();
@@ -24,9 +23,8 @@ namespace TagUtil
         }
 
         // ID3v2 Tags Reference: http://id3.org/id3v2.4.0-frames
-        public void SetInfoToForm( )
+        public void SetInfoToForm()
         {
-
             TagLib.File tagFile = mainForm.currentFile; // track is the name of the mp3
 
             editArtist.Text = string.Join("; ", tagFile.Tag.Performers); //tagFile.Tag.Performers[0];
@@ -42,7 +40,7 @@ namespace TagUtil
             editBitrate.Text = tagFile.Properties.AudioBitrate.ToString();
 
             editDuration.Text = tagFile.Properties.Duration.Hours.ToString() + ":" + tagFile.Properties.Duration.Minutes.ToString("0#") + "." + tagFile.Properties.Duration.Seconds.ToString("0#");
- 
+
             editBPM.Text = tagFile.Tag.BeatsPerMinute.ToString();
 
             editTags.Text = tagFile.TagTypesOnDisk.ToString();
@@ -65,7 +63,7 @@ namespace TagUtil
                     {
                         int nSlash = trackFrame.Text[0].IndexOf("/");
                         editTrack.Text = trackFrame.Text[0].Substring(0, nSlash);
-                        editTrackTotal.Text = (trackFrame.Text[0].Length > nSlash+1)?trackFrame.Text[0].Substring(nSlash+1):"";
+                        editTrackTotal.Text = (trackFrame.Text[0].Length > nSlash + 1) ? trackFrame.Text[0].Substring(nSlash + 1) : "";
                     }
                     else
                     {
@@ -73,11 +71,10 @@ namespace TagUtil
                         editTrackTotal.Text = tagFile.Tag.TrackCount == 0 ? "" : tagFile.Tag.TrackCount.ToString();
                     };
 
-//                    editKey.Text = ReadID3V2Tag("TKEY");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TKEY", false).ToString();
-//                    editISRC.Text = ReadID3V2Tag("TSRC");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TSRC", false).ToString();
-//                    editPublisher.Text = ReadID3V2Tag("TPUB");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPUB", false).ToString();
-//                    editRemixer.Text = ReadID3V2Tag("TPE4");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPE4", false).ToString();
-
+                    //                    editKey.Text = ReadID3V2Tag("TKEY");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TKEY", false).ToString();
+                    //                    editISRC.Text = ReadID3V2Tag("TSRC");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TSRC", false).ToString();
+                    //                    editPublisher.Text = ReadID3V2Tag("TPUB");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPUB", false).ToString();
+                    //                    editRemixer.Text = ReadID3V2Tag("TPE4");// TagLib.Id3v2.TextInformationFrame.Get(id3v2, "TPE4", false).ToString();
                 }
             }
             else
@@ -86,7 +83,7 @@ namespace TagUtil
                 editTrackTotal.Text = tagFile.Tag.TrackCount.ToString();
             }
 
-            if ( mainForm.serato.ContainsSeratoData() )
+            if (mainForm.serato.ContainsSeratoData())
             {
                 if (mainForm.serato.serato_struct.seratoAnalysis.raw.Length > 0)
                 {
@@ -98,7 +95,6 @@ namespace TagUtil
                         {
                             if (i > 0) editSeratoAnalysis.Text += ".";
                             editSeratoAnalysis.Text += mainForm.serato.serato_struct.seratoAnalysis.raw[i].ToString();
-
                         }
                     }
                 }
@@ -122,8 +118,7 @@ namespace TagUtil
                             CueNames += mainForm.serato.serato_struct.Cues[i].Name;
                         }
                     }
-                    if( CueNames.Length > 1 ) Markers += CueNames + ")";
-
+                    if (CueNames.Length > 1) Markers += CueNames + ")";
                 }
                 if (mainForm.serato.serato_struct.HighestLoop > 0)
                 {
@@ -143,7 +138,6 @@ namespace TagUtil
                     {
                         Markers += LoopNames + ")";
                     }
-
                 }
                 editSeratoMarkers.Text = Markers;
                 editSeratoBPMLock.Text = mainForm.serato.serato_struct.BPMLock == 0 ? "Off" : "On";
@@ -183,9 +177,8 @@ namespace TagUtil
             //TagLib.Id3v2.TextInformationFrame test = tagFile.TagTypes
         }
 
-        public void GetInfoFromForm( )
+        public void GetInfoFromForm()
         {
-
             TagLib.File tagFile = mainForm.currentFile; // track is the name of the mp3
 
             editArtist.Text = string.Join("; ", tagFile.Tag.Performers); //tagFile.Tag.Performers[0];
@@ -206,7 +199,7 @@ namespace TagUtil
             uint.TryParse(editBPM.Text, out BPM);
             tagFile.Tag.BeatsPerMinute = BPM;
 
-//            editTags.Text = tagFile.TagTypesOnDisk.ToString();
+            //            editTags.Text = tagFile.TagTypesOnDisk.ToString();
 
             tagFile.Tag.InitialKey = editKey.Text;
             tagFile.Tag.ISRC = editISRC.Text;
@@ -233,10 +226,8 @@ namespace TagUtil
                         editTrack.Text = tagFile.Tag.Track == 0 ? "" : tagFile.Tag.Track.ToString();
                         editTrackTotal.Text = tagFile.Tag.TrackCount == 0 ? "" : tagFile.Tag.TrackCount.ToString();
                     };
-
                 }
             }
-
         }
 
         private void btnSave_Click(object sender, EventArgs e)
