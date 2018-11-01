@@ -150,11 +150,11 @@ namespace TagUtil
                         //                    FillTagInfoStruct(file);
                         //                    uint year = currentFile.Tag.Year;
                         //bool vbr = IsVBR();
-                        String[] itemStrings = { currentFile.Tag.Performers[0], currentFile.Tag.Title, currentFile.Tag.Album, currentFile.Tag.Year.ToString(), file, currentFile.Properties.AudioBitrate.ToString() };
+                        String[] itemStrings = { string.Join(",",currentFile.Tag.Performers), currentFile.Tag.Title, currentFile.Tag.Album, currentFile.Tag.Year.ToString(), file, currentFile.Properties.AudioBitrate.ToString() };
                         ListViewItem item = new ListViewItem(itemStrings);
                         FileInfoView.Items.Add(item);
                         DataRow dr = tableTagUtil.NewRow();
-                        dr["Artist"] = currentFile.Tag.Performers[0];
+                        dr["Artist"] = string.Join(",", currentFile.Tag.Performers);
                         dr["Title"] = currentFile.Tag.Title;
                         dr["Album"] = currentFile.Tag.Album;
                         dr["Year"] = currentFile.Tag.Year;

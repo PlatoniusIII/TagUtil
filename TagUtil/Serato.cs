@@ -13,6 +13,7 @@ namespace TagUtil
     /// <remarks>
     ///    Base64 encoding fails at times because it's missing an 'A'
     ///    at the end. So instead of 3 padding we add 'A=='.
+    ///    Serato 2.1 Beta doesn't seem to have changed the tags.
     /// </remarks>
     public class Serato
     {
@@ -210,10 +211,10 @@ namespace TagUtil
                 //                seratoAutotagsRaw = new byte[0];
                 //                seratoBeatgrid = string.Empty;
                 //                seratoBeatgridRaw = new byte[0];
-                seratoMarkers = string.Empty;
-                seratoMarkersRaw = new byte[0];
                 //                seratoMarkersV2 = string.Empty;
                 //                seratoMarkersV2Raw = new byte[0];
+                seratoMarkers = string.Empty;
+                seratoMarkersRaw = new byte[0];
                 seratoOverview = string.Empty;
                 seratoOverviewRaw = new byte[0];
                 seratoRelVol = string.Empty;
@@ -708,9 +709,7 @@ namespace TagUtil
             {
                 byte bt = serato_struct.seratoBeatgrid.raw[0]; //Placeholder to quickly see contents
             }
-            //The 43 is always on the same position. All my examples start with 01 00 00 00 00 01, which leaves 4 bytes until the 43 and 4 bytes after.
-            //The beatgrid will probably need a starting position and spacing
-            //The value after the 6th 01 is 3x
+            //The beatgrid will probably need a starting position and spacing (offset/interval)
             //Maybe make a set of files with slight offsets to the grid and spacing to see how the tag changes
             //01 00 00 00 00 01 3D 88 E7 A4 43 2E 00 00 63
             //01 00 00 00 00 01 3E A4 B6 B2 43 0D 00 00 20 00 ??Flac
@@ -718,6 +717,16 @@ namespace TagUtil
             //01 00 00 00 00 01 3C CD 5B 77 43 12 B0 A4 2D
             //01 00 00 00 00 01 3F FB E2 30 43 16 00 00 00
             //01 00 00 00 00 01 3E F3 DC 9D 43 15 21 48 00 00
+            //MP3 at half speed
+            //01 00 00 00 00 01 3D 3C 3E 82 42 A5 00 00 00
+            //MP3 at normal speed
+            //01 00 00 00 00 01 3D 3C 3E 82 43 25 00 00 00"
+            //WAV at half speed
+            //01 00 00 00 00 01 3D 88 E7 A4 42 93 EB 85 00"
+            //WAV at normal speed
+            //01 00 00 00 00 01 3D 88 E7 A4 43 13 EE 14 00
+            //Bytes 7-10 stay the same, so that should have to do with the base position. Bytes 11+ change, so that probably has to do with offset/interval
+            //01 00 00 00 00 01 3D 5E 78 6B 43 29 61 48 00
         }
 
         /// <summary>
