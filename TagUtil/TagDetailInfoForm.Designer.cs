@@ -79,6 +79,7 @@
             this.btnSave = new System.Windows.Forms.Button();
             this.editSeratoBPMLock = new System.Windows.Forms.TextBox();
             this.labelSeratoBPMLock = new System.Windows.Forms.Label();
+            this.buttonSearchDiscogs = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
             this.SuspendLayout();
             // 
@@ -260,7 +261,7 @@
             // 
             // pictureBoxPreview
             // 
-            this.pictureBoxPreview.Location = new System.Drawing.Point(82, 519);
+            this.pictureBoxPreview.Location = new System.Drawing.Point(82, 489);
             this.pictureBoxPreview.Name = "pictureBoxPreview";
             this.pictureBoxPreview.Size = new System.Drawing.Size(237, 235);
             this.pictureBoxPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -470,9 +471,9 @@
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(2, 730);
+            this.btnSave.Location = new System.Drawing.Point(81, 730);
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(75, 23);
+            this.btnSave.Size = new System.Drawing.Size(101, 23);
             this.btnSave.TabIndex = 49;
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
@@ -494,11 +495,22 @@
             this.labelSeratoBPMLock.TabIndex = 50;
             this.labelSeratoBPMLock.Text = "BPM Lock";
             // 
+            // buttonSearchDiscogs
+            // 
+            this.buttonSearchDiscogs.Location = new System.Drawing.Point(217, 730);
+            this.buttonSearchDiscogs.Name = "buttonSearchDiscogs";
+            this.buttonSearchDiscogs.Size = new System.Drawing.Size(103, 23);
+            this.buttonSearchDiscogs.TabIndex = 52;
+            this.buttonSearchDiscogs.Text = "Search Discogs";
+            this.buttonSearchDiscogs.UseVisualStyleBackColor = true;
+            this.buttonSearchDiscogs.Click += new System.EventHandler(this.buttonSearchDiscogs_Click);
+            // 
             // TagDetailInfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(508, 756);
+            this.Controls.Add(this.buttonSearchDiscogs);
             this.Controls.Add(this.editSeratoBPMLock);
             this.Controls.Add(this.labelSeratoBPMLock);
             this.Controls.Add(this.btnSave);
@@ -612,5 +624,6 @@
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.TextBox editSeratoBPMLock;
         private System.Windows.Forms.Label labelSeratoBPMLock;
+        private System.Windows.Forms.Button buttonSearchDiscogs;
     }
 }

@@ -2,8 +2,6 @@
 using System.Xml.Serialization;
 using System.IO;
 using System.Windows.Forms;
-using System.Drawing;
-using System.Collections.Generic;
 
 namespace XMLsetting
 {
@@ -16,30 +14,38 @@ namespace XMLsetting
         //public List<CameraSettings> CameraList;
         public string directoryRenameScheme;
         public string currentDirectory;
+        public string discogsKey;
+        public string discogsSecret;
+        public string discogsToken;
 
         // Default Values are loaded
         public void InitDefaults()
         {
             directoryRenameScheme = "..\\%isrc% %albumartist% - %album% - %year% (%bitratetype%)";
             currentDirectory = "H:\\Music\\Archived\\Drum & Bass\\Labels\\[0-9]\\3rd Party\\"; ;// "c:\\";
+            discogsKey = "CustomerKey";
+            discogsSecret = "CustomerSecret";
+            discogsToken = "CustomerToken";
         }
     }
 
     [Serializable()]
     public class AppSettings
     {
+        public TagUtil.Crypto cryptoEngine;
+
         public AppSettings()
-        {            
+        {
+            cryptoEngine = new TagUtil.Crypto(TagUtil.Crypto.CryptoTypes.encTypeDES);
         }
 
         public void InitDefault()
         {
             TagUtilSettings = new TagUtilSettingsClass();
             TagUtilSettings.InitDefaults();
+        }
 
-       }
-
-        private static string SettingsFile = "CCP_settings.xml";  // default name of settings file
+        private static string SettingsFile = "TagUtil.xml";  // default name of settings file
 
         public TagUtilSettingsClass TagUtilSettings;
 
@@ -56,6 +62,7 @@ namespace XMLsetting
             try
             {
                 fileStream = new FileStream(settingsFile, FileMode.Open);
+                if (fileStream.Length == 0) throw new FileNotFoundException();
             }
             catch (FileNotFoundException)
             {
@@ -71,6 +78,8 @@ namespace XMLsetting
 
             // File succesfully opened, store full file path
             SettingsFile = fileStream.Name;
+            appSettings.TagUtilSettings.discogsKey = appSettings.cryptoEngine.Decrypt(appSettings.TagUtilSettings.discogsKey);
+//            appSettings.TagUtilSettings.discogsSecret = appSettings.cryptoEngine.Decrypt(appSettings.TagUtilSettings.discogsSecret);
             fileStream.Close();
 
             return appSettings;
@@ -87,9 +96,11 @@ namespace XMLsetting
             StreamWriter writer = new StreamWriter(settingsFile);
             try
             {
+                TagUtilSettings.discogsKey = cryptoEngine.Encrypt(TagUtilSettings.discogsKey);
+                TagUtilSettings.discogsSecret = cryptoEngine.Encrypt(TagUtilSettings.discogsSecret);
                 serializer.Serialize(writer, this);
             }
-            catch (Exception)
+            catch (Exception e)
             {
 //                logger.ErrorFormat("Error: opening avi file - catch: {0}", e.Message);
             }

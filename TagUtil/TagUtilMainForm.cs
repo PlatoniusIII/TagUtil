@@ -60,7 +60,7 @@ namespace TagUtil
         private string QualityRating = "";
         //        public List<TagInfo> fileTags = new List<TagInfo>();
 
-        private XMLsetting.AppSettings appSettings;
+        public XMLsetting.AppSettings appSettings = new XMLsetting.AppSettings();
 
         public MainForm()
         {

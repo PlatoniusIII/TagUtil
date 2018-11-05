@@ -8,6 +8,7 @@ namespace TagUtil
     public partial class TagDetailInfoForm : Form
     {
         private MainForm mainForm;
+        private DiscogsInterface discogs = null;
 
         public TagDetailInfoForm(MainForm parent)
         {
@@ -237,6 +238,19 @@ namespace TagUtil
                 GetInfoFromForm();
                 mainForm.currentFile.Save();
             }
+        }
+
+        private void buttonSearchDiscogs_Click(object sender, EventArgs e)
+        {
+            if(discogs == null )
+                discogs = new DiscogsInterface( mainForm.appSettings.TagUtilSettings.discogsToken);
+
+//            DiscogsInterface discogs = new DiscogsInterface();
+            //Create authentication object using private and public keys: you should fournish real keys here
+//            var oAuthCompleteInformation = new OAuthCompleteInformation("consumerKey",
+//                                            "consumerSecret", "token", "tokenSecret");
+            //Create discogs client using the authentication
+//            var discogsClient = new DiscogsClient.DiscogsClient(oAuthCompleteInformation);
         }
     }
 }
