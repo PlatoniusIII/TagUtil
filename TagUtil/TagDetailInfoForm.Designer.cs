@@ -80,6 +80,8 @@
             this.editSeratoBPMLock = new System.Windows.Forms.TextBox();
             this.labelSeratoBPMLock = new System.Windows.Forms.Label();
             this.buttonSearchDiscogs = new System.Windows.Forms.Button();
+            this.editSeratoCue1 = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
             this.SuspendLayout();
             // 
@@ -505,12 +507,29 @@
             this.buttonSearchDiscogs.UseVisualStyleBackColor = true;
             this.buttonSearchDiscogs.Click += new System.EventHandler(this.buttonSearchDiscogs_Click);
             // 
+            // editSeratoCue1
+            // 
+            this.editSeratoCue1.Location = new System.Drawing.Point(395, 489);
+            this.editSeratoCue1.Name = "editSeratoCue1";
+            this.editSeratoCue1.Size = new System.Drawing.Size(62, 20);
+            this.editSeratoCue1.TabIndex = 51;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(335, 492);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(35, 13);
+            this.label3.TabIndex = 23;
+            this.label3.Text = "Cue 1";
+            // 
             // TagDetailInfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(508, 756);
             this.Controls.Add(this.buttonSearchDiscogs);
+            this.Controls.Add(this.editSeratoCue1);
             this.Controls.Add(this.editSeratoBPMLock);
             this.Controls.Add(this.labelSeratoBPMLock);
             this.Controls.Add(this.btnSave);
@@ -538,6 +557,7 @@
             this.Controls.Add(this.editKey);
             this.Controls.Add(this.labelBPM);
             this.Controls.Add(this.editBPM);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.labelSerato);
             this.Controls.Add(this.pictureBoxPreview);
             this.Controls.Add(this.labelDuration);
@@ -625,5 +645,7 @@
         private System.Windows.Forms.TextBox editSeratoBPMLock;
         private System.Windows.Forms.Label labelSeratoBPMLock;
         private System.Windows.Forms.Button buttonSearchDiscogs;
+        private System.Windows.Forms.TextBox editSeratoCue1;
+        private System.Windows.Forms.Label label3;
     }
 }

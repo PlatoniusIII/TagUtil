@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Xml.Serialization;
 using System.IO;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 
 namespace XMLsetting
 {
@@ -13,6 +13,7 @@ namespace XMLsetting
     {
         //public List<CameraSettings> CameraList;
         public string directoryRenameScheme;
+
         public string currentDirectory;
         public string discogsKey;
         public string discogsSecret;
@@ -29,16 +30,28 @@ namespace XMLsetting
         }
     }
 
+    /// <summary>
+    /// Class containing saved settings
+    /// </summary>
     [Serializable()]
     public class AppSettings
     {
+        /// <summary>
+        /// Crypto engine for encoding/decoding Discogs oauth info to be stored
+        /// </summary>
         public TagUtil.Crypto cryptoEngine;
 
+        /// <summary>
+        /// Defaulkt constructor
+        /// </summary>
         public AppSettings()
         {
             cryptoEngine = new TagUtil.Crypto(TagUtil.Crypto.CryptoTypes.encTypeDES);
         }
 
+        /// <summary>
+        /// Set default values
+        /// </summary>
         public void InitDefault()
         {
             TagUtilSettings = new TagUtilSettingsClass();
@@ -47,11 +60,18 @@ namespace XMLsetting
 
         private static string SettingsFile = "TagUtil.xml";  // default name of settings file
 
+        /// <summary>
+        /// Link to class containing actual settings
+        /// </summary>
         public TagUtilSettingsClass TagUtilSettings;
 
-//        public static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        //        public static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        // Read settings from given settings file
+        /// <summary>
+        /// Read settings from given settings file
+        /// </summary>
+        /// <param name="settingsFile"> contains the filename to use</param>
+        /// <returns>Pointer to settings class</returns>
         public static AppSettings LoadSettings(string settingsFile)
         {
             AppSettings appSettings = null;
@@ -79,17 +99,24 @@ namespace XMLsetting
             // File succesfully opened, store full file path
             SettingsFile = fileStream.Name;
             appSettings.TagUtilSettings.discogsKey = appSettings.cryptoEngine.Decrypt(appSettings.TagUtilSettings.discogsKey);
-//            appSettings.TagUtilSettings.discogsSecret = appSettings.cryptoEngine.Decrypt(appSettings.TagUtilSettings.discogsSecret);
+            //            appSettings.TagUtilSettings.discogsSecret = appSettings.cryptoEngine.Decrypt(appSettings.TagUtilSettings.discogsSecret);
             fileStream.Close();
 
             return appSettings;
         }
-        // Write settings to same settings file as they were read from
+
+        /// <summary>
+        /// Write settings to same settings file as they were read from
+        /// </summary>
         public void SaveSettings()
         {
             SaveSettings(SettingsFile);
         }
-        // Write settings to given settings file
+
+        /// <summary>
+        /// Write settings to given settings file
+        /// </summary>
+        /// <param name="settingsFile"> contains the filename to use</param>
         public void SaveSettings(string settingsFile)
         {
             XmlSerializer serializer = new XmlSerializer(typeof(AppSettings));
@@ -102,13 +129,12 @@ namespace XMLsetting
             }
             catch (Exception e)
             {
-//                logger.ErrorFormat("Error: opening avi file - catch: {0}", e.Message);
+                //                logger.ErrorFormat("Error: opening avi file - catch: {0}", e.Message);
             }
             finally
             {
                 writer.Close();
             }
         }
-
     }
 }

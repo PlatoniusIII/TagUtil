@@ -19,26 +19,34 @@ namespace TagUtil
     public partial class MainForm : Form
     {
         //        public string directoryRenameScheme = "..\\%isrc% %albumartist% - %album% - %year% (%bitratetype%)";
+        /// <summary>Active open file in the application</summary>
         public TagLib.File currentFile = null;
 
         private TagDetailInfoForm fileInfo;
 
+        /// <summary>id3v1 tag</summary>
         public TagLib.Id3v1.Tag id3v1;
+        /// <summary>id3v2 tag</summary>
         public TagLib.Id3v2.Tag id3v2;
+        /// <summary>Apple tag</summary>
         public TagLib.Mpeg4.AppleTag apple;
+        /// <summary>Ape tag</summary>
         public TagLib.Ape.Tag ape;
-
-        //        public TagLib.Asf.Tag asf;
+        /// <summary>Ogg Vorbis Xiph tag</summary>
         public TagLib.Ogg.XiphComment ogg;
-
+        /// <summary>Flac Metadata tag</summary>
         public TagLib.Flac.Metadata flac;
-        public ByteVector Serato_Autotags_Identifier_ID3 = new ByteVector("Serato Autotags");
-        public ByteVector Serato_BeatGrid_Identifier_ID3 = new ByteVector("Serato BeatGrid");
-        public ByteVector Serato_Autotags_Identifier = new ByteVector("SERATO_ANALYSIS");
-        public ByteVector Serato_BeatGrid_Identifier = new ByteVector("SERATO_BEATGRID");
-        public ByteVector LAME_Identifier = new ByteVector("LAME");
+
+        private ByteVector Serato_Autotags_Identifier_ID3 = new ByteVector("Serato Autotags");
+        private ByteVector Serato_BeatGrid_Identifier_ID3 = new ByteVector("Serato BeatGrid");
+        private ByteVector Serato_Autotags_Identifier = new ByteVector("SERATO_ANALYSIS");
+        private ByteVector Serato_BeatGrid_Identifier = new ByteVector("SERATO_BEATGRID");
+        private ByteVector LAME_Identifier = new ByteVector("LAME");
         private string[] extensions = { ".mp3", ".wma", ".mp4", ".wav", ".flac", ".m4a" };
 
+        /// <summary>
+        /// Serato struct containing all Serato info.
+        /// </summary>
         public Serato serato;
 
         private enum BitrateType
@@ -60,8 +68,14 @@ namespace TagUtil
         private string QualityRating = "";
         //        public List<TagInfo> fileTags = new List<TagInfo>();
 
+        /// <summary>
+        /// Link to settings class
+        /// </summary>
         public XMLsetting.AppSettings appSettings = new XMLsetting.AppSettings();
 
+        /// <summary>
+        /// Main form for the application, contains the listbox
+        /// </summary>
         public MainForm()
         {
             InitializeComponent();
@@ -85,7 +99,7 @@ namespace TagUtil
         }
 
         //Read all tags
-        public void ReadTags()
+        private void ReadTags()
         {
             /// <summary>Function to read the various tags from file, if available
             /// These will be checked in various get functions
@@ -343,7 +357,13 @@ namespace TagUtil
             return newDirectory;
         }
 
-        public static string SanitizeFileName(string fileName, char replacementChar = '_')
+        /// <summary>
+        /// Cleanup filename to filter out invalid characters
+        /// </summary>
+        /// <param name="fileName"> is the string to sanitize</param>
+        /// <param name="replacementChar"> is a replacement character for invalid characters found</param>
+        /// <returns></returns>
+        private static string SanitizeFileName(string fileName, char replacementChar = '_')
         {
             var blackList = new HashSet<char>(System.IO.Path.GetInvalidFileNameChars());
             var output = fileName.ToCharArray();
@@ -534,6 +554,11 @@ namespace TagUtil
         //REPLAYGAIN_TRACK_GAIN
         //REPLAYGAIN_TRACK_PEAK
 
+        /// <summary>
+        /// Function that goes through a directory with music files to determine a rating, checking for types,
+        /// bitrates and if files are corrupt.
+        /// </summary>
+        /// <returns>A string containing the quality rating</returns>
         private string DetermineMusicQualityRating()
         {
             /// <summary>This function checks all files in a directory and returns a 'quality rating'
