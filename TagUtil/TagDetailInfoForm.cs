@@ -5,11 +5,16 @@ using System.Windows.Forms;
 using System.Diagnostics;
 namespace TagUtil
 {
+    /// <summary>Form with detail info for the selected file</summary>
     public partial class TagDetailInfoForm : Form
     {
         private MainForm mainForm;
         private DiscogsInterface discogs = null;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="parent">Link to main form</param>
         public TagDetailInfoForm(MainForm parent)
         {
             mainForm = parent;
@@ -24,6 +29,9 @@ namespace TagUtil
         }
 
         // ID3v2 Tags Reference: http://id3.org/id3v2.4.0-frames
+        /// <summary>
+        /// Full TagDetailInfoForm with information from the currently selected file
+        /// </summary>
         public void SetInfoToForm()
         {
             try
@@ -185,6 +193,10 @@ namespace TagUtil
             }
         }
 
+        /// <summary>
+        /// Read changed info
+        /// </summary>
+        /// ToDO: GetInfoFromForm needs to be changed - handled for each field if it's changed
         public void GetInfoFromForm()
         {
             TagLib.File tagFile = mainForm.currentFile; // track is the name of the mp3

@@ -7,15 +7,15 @@ using System.Linq;
 using System.Windows.Forms;
 using TagLib;
 
-/// <summary>Whole idea:
-/// - be able to rename directories based on content
-/// - 'repair' cue files - so also view them and highlight errors
-/// </summary>
 //ToDo Problems with taglib-sharp:
 //ToDo TagLib: doesn't read a lot of tags from other formats than ID3V2 (for eaxmple doesn't read VORBIS_COMMENT metadata block from FLAC) See https://www.the-roberts-family.net/metadata/flac.html
 //ToDo TagLib: no list of "tags available in file"
 namespace TagUtil
 {
+    /// <remarks>Whole idea:
+    /// - be able to rename directories based on content
+    /// - 'repair' cue files - so also view them and highlight errors
+    /// </remarks>
     public partial class MainForm : Form
     {
         //        public string directoryRenameScheme = "..\\%isrc% %albumartist% - %album% - %year% (%bitratetype%)";
@@ -98,12 +98,11 @@ namespace TagUtil
             appSettings.SaveSettings();
         }
 
-        //Read all tags
+        /// <summary>Function to read the various tags from file, if available
+        /// These will be checked in various get functions
+        /// </summary>
         private void ReadTags()
         {
-            /// <summary>Function to read the various tags from file, if available
-            /// These will be checked in various get functions
-            /// </summary>
             //currentFile = TagLib.File.Create(FileInfoView.FocusedItem.SubItems[4].Text);
             id3v1 = currentFile.GetTag(TagLib.TagTypes.Id3v1) as TagLib.Id3v1.Tag;
             id3v2 = currentFile.GetTag(TagLib.TagTypes.Id3v2) as TagLib.Id3v2.Tag;
@@ -114,10 +113,10 @@ namespace TagUtil
             flac = currentFile.GetTag(TagLib.TagTypes.FlacMetadata) as TagLib.Flac.Metadata;
         }
 
+        /// <summary>Read all files in the specified directory, parse all files and fill in the listview
+        /// </summary>
         internal bool LoadFileInfo()
         {
-            /// <summary>Read all files in the specified directory, parse all files and fill in the listview
-            /// </summary>
             FileInfoView.View = View.Details;
             int width = FileInfoView.Width / 6 - 1;
             FileInfoView.Columns.Add("Artist", width, HorizontalAlignment.Left);
@@ -214,10 +213,10 @@ namespace TagUtil
             return true;
         }
 
+        /// <summary>For each file retrieve all tag info and store in TagInfo list
+        /// </summary>
         private void FillTagInfoStruct(string file)
         {
-            /// <summary>For each file retrieve all tag info and store in TagInfo list
-            /// </summary>
             TagInfo currentTag = new TagInfo();
             currentTag.Tags = currentFile.TagTypesOnDisk.ToString();
             currentTag.file = file;
@@ -268,10 +267,10 @@ namespace TagUtil
             //            fileTags.Add(currentTag);
         }
 
+        /// <summary>Read specific frame from ID3V2 tag
+        /// </summary>
         private string ReadID3V2Tag(string tag)
         {
-            /// <summary>Read specific frame from ID3V2 tag
-            /// </summary>
             TagLib.Id3v2.TextInformationFrame frame = TagLib.Id3v2.TextInformationFrame.Get(id3v2, tag, false);
             if (frame == null) return "";
             return frame.ToString();
@@ -312,14 +311,12 @@ namespace TagUtil
         ///    placeholders replaced.
         /// </value>
         /// <remarks>
-        ///    Contains some specific replacements I need.
+        ///    We are going to rename the folder. Loop through all (music) files in the folder to determine aspects 
+        ///    then rename. Contains some specific replacements I need.
         /// </remarks>
         /// <seealso cref="replacePlaceholder"/>
         private string ParseString()
         {
-            /// <summary>We are going to rename the folder. Loop through all (music) files in the folder to determine aspects
-            /// then rename
-            /// </summary>
             string newDirectory = string.Empty;
             bool bPlaceholderActive = false;
             string placeHolder = string.Empty;
@@ -427,8 +424,6 @@ namespace TagUtil
         /// type of file, or (for MP3) either the bitrate or if it's VBR</returns>
         private BitrateType GetBitrateType()
         {
-            /// <summary>Returns enum of bitrate type
-            /// </summary>
             BitrateType typeBitrate = BitrateType.bitrate_NONE;
             if (currentFile.MimeType == "taglib/flac") typeBitrate = BitrateType.bitrate_FLAC;
             if (currentFile.MimeType == "taglib/mp3")
@@ -454,10 +449,10 @@ namespace TagUtil
             return typeBitrate;
         }
 
+        /// <summary>Returns string version of bitrate type enum
+        /// </summary>
         private string GetBitrateTypeString(BitrateType type = BitrateType.bitrate_NONE)
         {
-            /// <summary>Returns string version of bitrate type enum
-            /// </summary>
             string bitrateTypeString = string.Empty;
             if (type == BitrateType.bitrate_NONE) type = GetBitrateType();
             switch (type)
@@ -480,10 +475,10 @@ namespace TagUtil
         //Additional info here http://gabriel.mp3-tech.org/mp3infotag.html
         //https://www.codeproject.com/Articles/8295/MPEG-Audio-Frame-Header
 
+        /// <summary>See if the mp3 file is encoded using VBR. Not sure what to do with ABR...
+        /// </summary>
         private bool IsVBR()
         {
-            /// <summary>See if the mp3 file is encoded using VBR. Not sure what to do with ABR...
-            /// </summary>
             bool bVBR = false;
 
             if (currentFile.MimeType != "taglib/mp3") return false;
@@ -559,12 +554,12 @@ namespace TagUtil
         /// bitrates and if files are corrupt.
         /// </summary>
         /// <returns>A string containing the quality rating</returns>
+        /// <remarks>This function checks all files in a directory and returns a 'quality rating'
+        /// This means the lossless type, bitrate for lossy, corrupt if there are 0-byte music files
+        /// Or various if it contains files with various bitrates or for example both VBR and CBR files
+        /// </remarks>
         private string DetermineMusicQualityRating()
         {
-            /// <summary>This function checks all files in a directory and returns a 'quality rating'
-            /// This means the lossless type, bitrate for lossy, corrupt if there are 0-byte music files
-            /// Or various if it contains files with various bitrates or for example both VBR and CBR files
-            /// </summary>
             string verdict = string.Empty; //The resulting string
             //Possible reasons/results
             bool bCorruptFiles = false; //Are the corrupt files

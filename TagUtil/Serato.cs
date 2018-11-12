@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using static TagUtil.Serato;
 
 namespace TagUtil
 {
@@ -124,8 +125,11 @@ namespace TagUtil
             /// </summary>
             public struct SeratoRaw
             {
+                /// <summary>Datatype</summary>
                 public string Type { set; get; }
+                /// <summary>Serato tag name</summary>
                 public string Name { set; get; }
+                /// <summary>Serato tag data</summary>
                 public byte[] data;
             }
 
@@ -136,6 +140,7 @@ namespace TagUtil
             /// divided into 1000 points</remarks>
             public class CueMarkers
             {
+                /// <summary>Initialize cue data</summary>
                 public void Init()
                 {
                     Name = string.Empty;
@@ -145,11 +150,17 @@ namespace TagUtil
                     color = System.Drawing.Color.Black;
                 }
 
+                /// <summary>Cue name</summary>
                 public string Name { set; get; }
+                /// <summary>Cue raw byte data</summary>
                 public byte[] raw { set; get; }
+                /// <summary>Size of data part of the tag</summary>
                 public int DataSize { set; get; }
+                /// <summary>Track position for the Cue</summary>
                 public int Position { set; get; }
+                /// <summary>Cue number</summary>
                 public int Number { set; get; }
+                /// <summary>Cue color</summary>
                 public Color color { set; get; }
             }
 
@@ -158,6 +169,7 @@ namespace TagUtil
             /// </summary>
             public class LoopMarkers
             {
+                /// <summary>Initialize loop info</summary>
                 public void Init()
                 {
                     Name = string.Empty;
@@ -168,12 +180,19 @@ namespace TagUtil
                     color = System.Drawing.Color.Black;
                 }
 
+                /// <summary>Loop name</summary>
                 public string Name { set; get; }
+                /// <summary>Loop raw byte data</summary>
                 public byte[] raw { set; get; }
+                /// <summary>Loop datasize</summary>
                 public int DataSize { set; get; }
+                /// <summary>Loop start position</summary>
                 public int PositionStart { set; get; }
+                /// <summary>Loop end position</summary>
                 public int PositionEnd { set; get; }
+                /// <summary>Loop number</summary>
                 public int Number { set; get; }
+                /// <summary>Loop color</summary>
                 public Color color { set; get; }
             }
 
@@ -183,14 +202,16 @@ namespace TagUtil
             /// <remarks>Probably just a bunch of start and end markers</remarks>
             public class FlipMarkers
             {
+                /// <summary>Single flip data</summary>
                 public struct FlipParts
                 {
+                    /// <summary>Flip size</summary>
                     public int Size { set; get; }
+                    /// <summary>Flip raw data</summary>
                     public byte[] raw { set; get; }
-                    public int PositionStart { set; get; }
-                    public int PositionEnd { set; get; }
                 }
 
+                /// <summary>Initialize flip data</summary>
                 public void Init()
                 {
                     Name = string.Empty;
@@ -200,14 +221,21 @@ namespace TagUtil
                     flipParts.Clear();
                 }
 
+                /// <summary>Flip name</summary>
                 public string Name { set; get; }
+                /// <summary>Flip raw byte data</summary>
                 public byte[] raw { set; get; }
+                /// <summary>Flip datasize</summary>
                 public int DataSize { set; get; }
+                /// <summary>Flip number</summary>
                 public int Number { set; get; }
+                /// <summary>Total number of flips</summary>
                 public int NumberOfFlips { set; get; }
+                /// <summary>List containing all flip data</summary>
                 public List<FlipParts> flipParts = new List<FlipParts>();
             }
 
+            /// <summary>Initialize Serato data</summary>
             public void Init()
             {
                 seratoAnalysis.Init();
@@ -306,11 +334,17 @@ namespace TagUtil
             public byte[] BPMLockRaw { set; get; }
             /// <summary>BPM Lock status</summary>
             public int BPMLock { set; get; }
+            /// <summary>Autogain tag value</summary>
             public double AutoGain { set; get; }
+            /// <summary>List containing raw data in byte and string format</summary>
             public List<SeratoRaw> dataRaw = new List<SeratoRaw>();
+            /// <summary>Second value from offset tag</summary>
             public string OffsetTag1 { set; get; }
+            /// <summary>Third value from offset tag</summary>
             public string OffsetTag2 { set; get; }
+            /// <summary>MP3 bitrate</summary>
             public double Bitrate { set; get; }
+            /// <summary>MP3 frequency</summary>
             public double Frequency { set; get; }
         }
 
@@ -355,7 +389,7 @@ namespace TagUtil
         /// <summary>MixedInKey generated track energy info</summary>
         public class MixedInKey_energy
         {
-            /// <summaryEnergy Level of the track</summary>
+            /// <summary>Energy Level of the track</summary>
             public string Energylevel { get; set; }
             /// <summary>Source</summary>
             public string Source { get; set; }
@@ -463,9 +497,6 @@ namespace TagUtil
         /// </remarks>
         public bool ContainsSeratoData()
         {
-            /// <summary>Scans the file for headers that point to Serato data
-            /// Tags may differ between formats
-            /// </summary>
             bool bExists = false;
 
             try
@@ -1052,7 +1083,7 @@ namespace TagUtil
         ///    Seems to fault on some base64 strings.
         /// </remarks>
         /// <returns>An <see cref="int"/> containing the position in
-        /// <seealso cref="serato_struct.dataRaw"/> where the data is stored</returns>
+        /// <seealso cref="Serato_struct.dataRaw"/> where the data is stored</returns>
         private bool DecodeSeratoFlac(string FieldName)
         {
             string[] seratoInput = mainForm.ogg.GetField(FieldName);
@@ -1131,7 +1162,7 @@ namespace TagUtil
         ///   Also splits description, type and data.
         /// </summary>
         /// <returns>An <see cref="int"/> containing the position in
-        /// <seealso cref="serato_struct.dataRaw"/> where the data is stored</returns>
+        /// <seealso cref="Serato_struct.dataRaw"/> where the data is stored</returns>
         private int DecodeSeratoApple(string EncodedString, bool JSON = false)
         {
             string result = string.Empty;

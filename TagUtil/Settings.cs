@@ -12,14 +12,19 @@ namespace XMLsetting
     public class TagUtilSettingsClass
     {
         //public List<CameraSettings> CameraList;
+        /// <summary>Name with placeholders used to rename directory</summary>
         public string directoryRenameScheme;
 
+        /// <summary>Current directory used</summary>
         public string currentDirectory;
+        /// <summary>Discogs key - if communicating using key</summary>
         public string discogsKey;
+        /// <summary>Discogs secret - if communicating using key</summary>
         public string discogsSecret;
+        /// <summary>Discogs token - if communicating using token</summary>
         public string discogsToken;
 
-        // Default Values are loaded
+        /// <summary>Default Values are loaded</summary>
         public void InitDefaults()
         {
             directoryRenameScheme = "..\\%isrc% %albumartist% - %album% - %year% (%bitratetype%)";

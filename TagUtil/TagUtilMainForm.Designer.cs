@@ -181,7 +181,7 @@ namespace TagUtil
         #endregion
 
         private System.Windows.Forms.Button buttonRenameFolder;
-        public System.Windows.Forms.ListView FileInfoView;
+        private System.Windows.Forms.ListView FileInfoView;
         private System.Windows.Forms.Panel TagInfoPanel;
         private System.Windows.Forms.TextBox editDirectoryRenameScheme;
         private System.Windows.Forms.Label labelDirectoryRenameScheme;
