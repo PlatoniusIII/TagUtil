@@ -42,7 +42,7 @@ namespace TagUtil
         private ByteVector Serato_Autotags_Identifier = new ByteVector("SERATO_ANALYSIS");
         private ByteVector Serato_BeatGrid_Identifier = new ByteVector("SERATO_BEATGRID");
         private ByteVector LAME_Identifier = new ByteVector("LAME");
-        private string[] extensions = { ".mp3", ".wma", ".mp4", ".wav", ".flac", ".m4a" };
+        private string[] extensions = { ".mp3", ".wma", ".mp4", ".wav", ".flac", ".m4a", ".cue" };
 
         /// <summary>
         /// Serato struct containing all Serato info.
@@ -158,22 +158,31 @@ namespace TagUtil
                 {
                     try
                     {
-                        currentFile = TagLib.File.Create(file);
-                        ReadTags();
-                        //                    FillTagInfoStruct(file);
-                        //                    uint year = currentFile.Tag.Year;
-                        //bool vbr = IsVBR();
-                        String[] itemStrings = { string.Join(",",currentFile.Tag.Performers), currentFile.Tag.Title, currentFile.Tag.Album, currentFile.Tag.Year.ToString(), file, currentFile.Properties.AudioBitrate.ToString() };
-                        ListViewItem item = new ListViewItem(itemStrings);
-                        FileInfoView.Items.Add(item);
-                        DataRow dr = tableTagUtil.NewRow();
-                        dr["Artist"] = string.Join(",", currentFile.Tag.Performers);
-                        dr["Title"] = currentFile.Tag.Title;
-                        dr["Album"] = currentFile.Tag.Album;
-                        dr["Year"] = currentFile.Tag.Year;
-                        dr["File"] = file;
-                        dr["Bitrate"] = currentFile.Properties.AudioBitrate;
-                        tableTagUtil.Rows.Add(dr);
+                        if( file.EndsWith("cue", true, System.Globalization.CultureInfo.CurrentCulture))
+                        {
+                            CueSheets cueSheetParser = new CueSheets(this);
+                            CueSheets.CueSheet cueSheet = new CueSheets.CueSheet();
+                            cueSheet = cueSheetParser.ParseCueSheet(file);
+                        }
+                        else
+                        {
+                            currentFile = TagLib.File.Create(file);
+                            ReadTags();
+                            //                    FillTagInfoStruct(file);
+                            //                    uint year = currentFile.Tag.Year;
+                            //bool vbr = IsVBR();
+                            String[] itemStrings = { string.Join(",", currentFile.Tag.Performers), currentFile.Tag.Title, currentFile.Tag.Album, currentFile.Tag.Year.ToString(), file, currentFile.Properties.AudioBitrate.ToString() };
+                            ListViewItem item = new ListViewItem(itemStrings);
+                            FileInfoView.Items.Add(item);
+                            DataRow dr = tableTagUtil.NewRow();
+                            dr["Artist"] = string.Join(",", currentFile.Tag.Performers);
+                            dr["Title"] = currentFile.Tag.Title;
+                            dr["Album"] = currentFile.Tag.Album;
+                            dr["Year"] = currentFile.Tag.Year;
+                            dr["File"] = file;
+                            dr["Bitrate"] = currentFile.Properties.AudioBitrate;
+                            tableTagUtil.Rows.Add(dr);
+                        }
                         //                    set.Tables.Add(tableTagUtil);
                     }
                     catch (CorruptFileException) //File is probably corrupt

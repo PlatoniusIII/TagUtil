@@ -789,6 +789,14 @@ namespace TagUtil
             //01 00 00 00 00 01 3D 88 E7 A4 43 13 EE 14 00
             //Bytes 7-10 stay the same, so that should have to do with the base position. Bytes 11+ change, so that probably has to do with offset/interval
             //01 00 00 00 00 01 3D 5E 78 6B 43 29 61 48 00
+            //Test series:
+            //01 00 00 00 00 01 BA DD FC 8A 43 0C A7 27 41 00 //Moved 1 position to start of file
+            //01 00 00 00 00 01 3E A4 B6 B2 43 0D 00 00 20 00 //Default
+            //01 00 00 00 00 01 3E A6 DD 33 43 0D 59 4A 72 00 //1 nudge right
+            //01 00 00 00 00 01 3E A9 03 B4 43 0D 59 4A 41 00 //1 more nudge right
+            //01 00 00 00 00 01 3E A9 03 B4 43 0D 00 00 41 00 //Interval increase 1 time
+            //01 00 00 00 00 01 3E A9 03 B4 43 0C A7 27 41 00 //Interval increase again 1 time
+            //So 12-15 are the interval. 6 - 13 could be start position (either 0, probably 1 position) and something else?
         }
 
         /// <summary>
