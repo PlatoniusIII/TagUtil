@@ -289,6 +289,25 @@ namespace TagUtil
         {
             appSettings.TagUtilSettings.directoryRenameScheme = editDirectoryRenameScheme.Text;
             string newDirectory = ParseString();
+            try
+            {
+                string pathSource = Path.GetDirectoryName(FileInfoView2.FocusedItem.SubItems[4].Text);
+                string pathDest = Directory.GetParent(pathSource) + "\\" + newDirectory;
+                Directory.Move(pathSource, pathDest);
+                //We have changed directories, update the files
+                foreach (ListViewItem item in FileInfoView2.Items)
+                {
+                    if (string.Equals(Path.GetDirectoryName(item.SubItems[4].Text), pathSource))
+                    {
+                        //ToDo: It changes the text, also in display but a click will try to open the original text
+                        item.SubItems[4].Text = item.SubItems[4].Text.Replace(pathSource, pathDest);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                labelResultingString.Text = ex.Message;
+            }
         }
 
         private void FileInfoView_ShowInfo(object sender, EventArgs e)

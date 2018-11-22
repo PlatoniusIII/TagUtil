@@ -170,6 +170,7 @@ namespace TagUtil
                 //else
                 //    checkSerato.CheckState = CheckState.Unchecked;
 
+                pictureBoxPreview.Image = null;
                 if (tagFile.Tag.Pictures.Length >= 1)
                 {
                     for (int i = 0; i < tagFile.Tag.Pictures.Length; i++)
