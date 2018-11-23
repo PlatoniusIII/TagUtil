@@ -422,7 +422,7 @@ namespace TagUtil
 
             switch (placeHolder)
             {
-                case "isrc": newData = (currentFile.Tag.ISRC.IndexOf(',') >= 0) ? currentFile.Tag.ISRC.Substring(0, currentFile.Tag.ISRC.IndexOf(',')) : currentFile.Tag.ISRC; break;
+                case "isrc": newData = currentFile.Tag.ISRC == null ? "": ((currentFile.Tag.ISRC.IndexOf(',') >= 0) ? currentFile.Tag.ISRC.Substring(0, currentFile.Tag.ISRC.IndexOf(',')) : currentFile.Tag.ISRC); newData = newData.Replace(" ", "");  break;
                 case "isrc_no_spaces": newData = ((currentFile.Tag.ISRC.IndexOf(',') >= 0) ? currentFile.Tag.ISRC.Substring(0, currentFile.Tag.ISRC.IndexOf(',')) : currentFile.Tag.ISRC).Replace(" ", ""); break;
                 case "albumartist": newData = currentFile.Tag.AlbumArtists[0]; break;
                 case "album": newData = currentFile.Tag.Album; break;
@@ -544,6 +544,7 @@ namespace TagUtil
                         int VBRQuality = BitConverter.ToInt32(Quality_data.ToArray().Reverse().ToArray(), 0);
                         bVBR = true;
                     }
+                    currentFile.Mode = TagLib.File.AccessMode.Closed;
 
                     //                    if (xing_header.Present)
                     //                        return false;
@@ -706,6 +707,12 @@ namespace TagUtil
                 {
                 }
             }
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            appSettings.TagUtilSettings.directoryRenameScheme = editDirectoryRenameScheme.Text;
+            string newDirectory = ParseString();
         }
     }
 

@@ -40,6 +40,7 @@ namespace TagUtil
             this.buttonCurrentDirectory = new System.Windows.Forms.Button();
             this.labelResultingString = new System.Windows.Forms.Label();
             this.FileInfoView2 = new BrightIdeasSoftware.DataListView();
+            this.buttonTestRenameResult = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.FileInfoView2)).BeginInit();
             this.SuspendLayout();
             // 
@@ -153,11 +154,23 @@ namespace TagUtil
             this.FileInfoView2.View = System.Windows.Forms.View.Details;
             this.FileInfoView2.Click += new System.EventHandler(this.FileInfoView2_Click);
             // 
-            // formMain
+            // buttonTestRenameResult
+            // 
+            this.buttonTestRenameResult.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonTestRenameResult.Location = new System.Drawing.Point(1049, 792);
+            this.buttonTestRenameResult.Name = "buttonTestRenameResult";
+            this.buttonTestRenameResult.Size = new System.Drawing.Size(107, 23);
+            this.buttonTestRenameResult.TabIndex = 10;
+            this.buttonTestRenameResult.Text = "Show Result";
+            this.buttonTestRenameResult.UseVisualStyleBackColor = true;
+            this.buttonTestRenameResult.Click += new System.EventHandler(this.button1_Click_1);
+            // 
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1750, 816);
+            this.Controls.Add(this.buttonTestRenameResult);
             this.Controls.Add(this.FileInfoView2);
             this.Controls.Add(this.labelResultingString);
             this.Controls.Add(this.labelCurrentDirectory);
@@ -168,7 +181,7 @@ namespace TagUtil
             this.Controls.Add(this.TagInfoPanel);
             this.Controls.Add(this.FileInfoView);
             this.Controls.Add(this.buttonRenameFolder);
-            this.Name = "formMain";
+            this.Name = "MainForm";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.formMain_FormClosing);
             this.Shown += new System.EventHandler(this.formMain_Shown);
@@ -190,6 +203,7 @@ namespace TagUtil
         private System.Windows.Forms.Button buttonCurrentDirectory;
         private System.Windows.Forms.Label labelResultingString;
         private BrightIdeasSoftware.DataListView FileInfoView2;
+        private System.Windows.Forms.Button buttonTestRenameResult;
     }
 }
 
